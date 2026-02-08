@@ -1,0 +1,69 @@
+html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; 
+    color: white;
+    font-family: 'fantasy';
+    width: 100vw;
+    height: 100vh;
+    background-image: url('https://i.imgur.com/YrZFSSN.jpg');
+    background-size: cover;
+    background-repeat: repeat;
+    animation: moveBg 10s linear infinite;
+}
+      
+@keyframes moveBg {
+        0% { background-position: 0 0; }
+        100% { background-position: 1000px 0; } /* Moves horizontally */
+}
+  
+  
+  .home-container h1 {
+    margin-bottom: 20px;
+    font-size: 3rem;
+  }
+  
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; 
+    background: rgba(110, 110, 110, 0.49); 
+    padding: 50px 60px; 
+    border-radius: 15px;
+    width: 250px; 
+    max-width: 50%; 
+    min-height: 500px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+  }
+  
+  .login-form input {
+    padding: 10px;
+    font-size: 1.5rem;
+    border-radius: 20px;
+    border: black 2px solid;
+    align-items: center;
+  }
+  
+  .login-form button {
+    padding: 15px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+    background-color: #1e90ff;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .login-form button:hover {
+    background-color: #0f78d4;
+  }
+  
+  
