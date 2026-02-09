@@ -3,22 +3,37 @@ import { NavLink } from "react-router-dom";
 import "./Navbar.css";
 import { Images } from "../Images/Images.js";
 import HomeIcon from '@mui/icons-material/Home';
+import PeopleIcon from '@mui/icons-material/People';
+import PhoneIcon from '@mui/icons-material/Phone';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 
 function Navbar() {
   return (
     <nav>
-      <NavLink className="title" to="/">
+      <NavLink to="/">
         <img src={Images.Logo.src} alt="logo" className="logo-img" />
-        <HomeIcon /></NavLink>
+      </NavLink>
+      <h2 className="LogoName">RootTeach AI</h2>
       <ul>
         <li>
-          <NavLink className="nav-link" to="/about">About</NavLink>
         </li>
         <li>
-          <NavLink className="nav-link" to="/team">Our Team</NavLink>
+          <NavLink className="nav-link" to="/about">
+            About
+          <ReceiptIcon />
+          </NavLink>
         </li>
         <li>
-          <NavLink className="nav-link" to="/contact">Contact Us</NavLink>
+          <NavLink className="nav-link" to="/team">
+            Our Team
+          <PeopleIcon />
+          </NavLink>
+        </li>
+        <li>
+          <NavLink className="nav-link" to="/contact">
+            Contact Us
+            <PhoneIcon />
+          </NavLink>
         </li>
       </ul>  
     </nav>

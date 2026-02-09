@@ -23,17 +23,6 @@ function App() {
       <div>
         <Login />
       </div>
-
-      <div>
-        <Navbar /> {/* Navbar always visible */}
-
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/team" element={<OurTeam />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Routes>
-      </div>
     </div>
   );
 }

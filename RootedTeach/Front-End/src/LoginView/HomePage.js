@@ -15,8 +15,6 @@ function HomePage() {
 
   return (
     <div className="home-container">
-      <h1>RootedTeach AI</h1>
-
       <form className="login-form" onSubmit={handleLogin}>
         <h1>Sign in</h1>
 
