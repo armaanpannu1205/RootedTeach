@@ -1,0 +1,53 @@
+.nav-link.active{
+    background-color: blue;
+}
+
+nav{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(rgb(2, 2, 59), black);
+    padding: 20px 40px;
+}
+
+nav .title{
+    color: white;
+    margin: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+nav ul{
+    display: flex;
+}
+
+nav ul li{
+    list-style: none;
+}
+
+nav ul li a{
+    display: block;
+    text-decoration: none;
+    color: white;
+    padding: 0.5rem;
+    margin: 0 0.5rem;
+    border-radius: 0.5rem;
+}
+
+nav ul li a:hover{
+    background-color: yellow;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.nav-link {
+    font-size: 1.2rem;
+}

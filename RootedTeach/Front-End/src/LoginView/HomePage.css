@@ -1,7 +1,7 @@
 html, body {
     height: 100%;
     margin: 0;
-  }
+}
 
 .home-container {
     display: flex;
@@ -104,21 +104,4 @@ html, body {
   .login-form button:hover {
     background-color: #0f78d4;
   }
-
-  .input-wrapper {
-    position: relative;
-    width: 100%;
-  }
   
-  .input-icon {
-    position: absolute;
-    top: 50%;
-    right:-15px;
-    transform: translateY(-50%);
-    color: #ffffff;
-    pointer-events: none;
-  }
-
-  .input-wrapper input {
-    width: 100%;
-  }
