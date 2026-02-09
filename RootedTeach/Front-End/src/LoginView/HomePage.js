@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import "./HomePage.css";
 import { Images } from "../Images/Images.js";
-import PersonIcon from '@mui/icons-material/Person';
-import LockIcon from '@mui/icons-material/Lock';
+import PersonIcon from "@mui/icons-material/Person";
+import LockIcon from "@mui/icons-material/Lock";
 
 function HomePage() {
   const [email, setEmail] = useState("");
@@ -15,8 +15,11 @@ function HomePage() {
 
   return (
     <div className="home-container">
+      <h1>RootedTeach AI</h1>
+
       <form className="login-form" onSubmit={handleLogin}>
         <h1>Sign in</h1>
+
         <div className="input-wrapper">
           <PersonIcon className="input-icon" />
           <input
@@ -27,6 +30,7 @@ function HomePage() {
             required
           />
         </div>
+
         <div className="input-wrapper">
           <LockIcon className="input-icon" />
           <input
@@ -37,8 +41,11 @@ function HomePage() {
             placeholder="Password"
           />
         </div>
+
         <button type="submit">Login</button>
-        <div className="ForgotPassword">Don't have an Account? Click me
+
+        <div className="ForgotPassword">
+          Don't have an Account? Click me
         </div>
       </form>
     </div>
