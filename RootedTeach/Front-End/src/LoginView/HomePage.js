@@ -8,7 +8,7 @@ function HomePage() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    alert(`Logging in with ${email}`);
+    alert(`Logging in with ${email}`);  
   };
 
   return (

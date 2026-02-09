@@ -1,7 +1,7 @@
 html, body {
     height: 100%;
     margin: 0;
-  }
+}
 
 .home-container {
     display: flex;
@@ -65,5 +65,4 @@ html, body {
   .login-form button:hover {
     background-color: #0f78d4;
   }
-  
   
