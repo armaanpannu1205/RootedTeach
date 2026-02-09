@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./HomePage.css";
-import { Images } from "../Images/Images.js"; // Update the correct path
+import { Images } from "../Images/Images.js";
+import PersonIcon from '@mui/icons-material/Person';
+import LockIcon from '@mui/icons-material/Lock';
 
 function HomePage() {
   const [email, setEmail] = useState("");
@@ -13,27 +15,31 @@ function HomePage() {
 
   return (
     <div className="home-container">
-     <h1>RootedTeach AI</h1>
       <form className="login-form" onSubmit={handleLogin}>
-        <div>
-          <label>Email:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <h1>Sign in</h1>
+        <div className="input-wrapper">
+          <PersonIcon className="input-icon" />
           <input
             type="email"
             value={email}
+            placeholder="Email"
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        <div>
-          <label>Password:&nbsp;</label>
+        <div className="input-wrapper">
+          <LockIcon className="input-icon" />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            placeholder="Password"
           />
         </div>
         <button type="submit">Login</button>
+        <div className="ForgotPassword">Don't have an Account? Click me
+        </div>
       </form>
     </div>
   );
