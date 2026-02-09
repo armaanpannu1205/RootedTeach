@@ -4,6 +4,12 @@ import Teacher from './TeacherView/Teacher.js'
 import Login from './LoginView/Login.js'
 import {useState} from 'react'
 
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./LoginView/Navbar";
+import AboutPage from "./LoginView/AboutPage";
+import OurTeam from "./LoginView//OurTeam";
+import ContactPage from "./LoginView/ContactPage";
+import HomePage from "./LoginView/HomePage";
 function App() {
   const [logIn, setLogin] = useState(false);
   const handleClick = () => {
@@ -11,10 +17,17 @@ function App() {
   }
   return (
     <div className="App">
-     <button onClick ={handleClick}>Log in</button>
-      {
-      logIn ? <Teacher /> : <Login />
-      }
+
+    <div>
+      <Navbar /> 
+      
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/team" element={<OurTeam />} />
+        <Route path="/contact" element={<ContactPage />} />
+      </Routes>
+    </div>
     </div>
   );
 }
