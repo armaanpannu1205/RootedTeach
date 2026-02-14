@@ -5,5 +5,8 @@ export const Images = {
     LoginBackground: {
         src: "https://i.imgur.com/YrZFSSN.jpg",
       },
+    IntroArman: {
+      src: "https://i.imgur.com/bOoofSw.jpg",
+    }
   };
   

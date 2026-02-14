@@ -13,7 +13,7 @@ function Navbar() {
       <NavLink to="/">
         <img src={Images.Logo.src} alt="logo" className="logo-img" />
       </NavLink>
-      <h2 className="LogoName">RootTeach AI</h2>
+      <h2 className="LogoName">RootedTeach AI</h2>
       <ul>
         <li>
         </li>
