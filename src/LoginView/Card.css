@@ -1,0 +1,43 @@
+.card {
+    width: 280px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, hsl(231, 64%, 13%), #0c1429, #090f2a);
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(154, 154, 154, 0.452);
+    border: 3px solid rgba(47, 54, 83, 0.755); 
+    padding-top: 60px;
+    padding-bottom: 60px;
+    padding-left: 50px;
+    padding-right: 50px;
+
+
+    margin: 30px;
+    max-width: 250px;
+    display: inline-block;
+  }
+
+  .card-img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    margin-top: 5px;
+  }
+  
+  .card-name {
+    font-family: 'Times New Roman', Times, serif;
+    margin: 5px
+  }
+  .card-role {
+    font-family: Arial;
+    margin: 10px;
+    font-size: 14px;
+  }
+  
+  .card-about {
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    padding-top: 8px;
+    font-size: 12px;
+  }
+  
