@@ -8,17 +8,16 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   height: 100vh; 
   color: white;
   font-family: 'Inter';
-  font-family: 'fantasy';
   width: 100vw;
   height: 100vh;
   background-image: url('https://i.imgur.com/YrZFSSN.jpg');
   background-size: cover;
   background-repeat: repeat;
   animation: moveBg 40s linear infinite;
-  animation: moveBg 10s linear infinite;
 }
     
 @keyframes moveBg {
@@ -31,8 +30,11 @@ html, body {
   margin-bottom: 10px;
   font-size: 3rem;
   font-family: sans-serif;
-  font-weight: 1000px;
+  font-weight: 900px;
   margin-top: 0px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .login-form {
@@ -48,6 +50,7 @@ html, body {
   max-width: 40%; 
   min-height: 425px; 
   box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+  
 }
 
 .login-form input {
@@ -85,7 +88,6 @@ html, body {
   padding: 15px;
   border: none;
   color: white;
-  background: #522a9b;
   background: linear-gradient(90deg,rgb(4, 97, 133) 0%, rgb(43, 23, 117));
   cursor: pointer;
   border: 1px solid lightblue;

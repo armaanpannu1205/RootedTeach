@@ -1,0 +1,28 @@
+* {
+    margin: 0;
+    color: white;
+}
+h1 {
+    display: flex;
+    justify-content: center;
+    padding:20px;
+    font-size: 50px;
+    font-family: sans-serif;
+
+}
+.container {
+    display: flex;
+    background-image: url('https://i.imgur.com/YrZFSSN.jpg');
+    min-height: 100vh;
+    background-size: cover;
+    background-repeat: repeat;
+    animation: moveBg 40s linear infinite;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-container {
+    margin-left: 100px;
+    margin-right: 100px;
+
+}
