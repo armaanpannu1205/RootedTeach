@@ -10,6 +10,9 @@ import AboutPage from "./LoginView/AboutPage";
 import OurTeam from "./LoginView/OurTeam";
 import ContactPage from "./LoginView/ContactPage";
 import HomePage from "./LoginView/HomePage";
+import StudentDashboard from "./StudentView/StudentDashboard"
+import CourseDashboard from "./StudentView/CourseDashboard"
+import AssignmentDashboard from "./StudentView/AssignmentDashboard";
 
 function App() {
   const [logIn, setLogin] = useState(false);
@@ -20,9 +23,12 @@ function App() {
 
   return (
     <div className="App">
-      <div>
-        <Login />
-      </div>
+      <Routes>
+        <Route path="/" element={<StudentDashboard />} />
+        <Route path="/dashboard" element={<StudentDashboard />} />
+        <Route path="/course" element={<CourseDashboard />} />
+        <Route path="/assignment" element={<AssignmentDashboard />} />
+      </Routes>
     </div>
   );
 }
