@@ -4,23 +4,33 @@
   display: flex;
   flex-direction: column;
   text-align: left;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  background-color: rgba(0, 1, 26, 0.97);
 }
 
 .class-page-header {
   padding: 40px 24px;
+  background-color: rgba(0, 1, 26, 0.97);
+  border-bottom: 1px solid #0f1646;
 }
 
 .class-page-back-link {
   text-decoration: none;
   font-size: 14px;
   opacity: 0.8;
+  color: #6ea8ff;
+  transition: opacity 0.2s;
+}
+
+.class-page-back-link:hover {
+  opacity: 1;
 }
 
 .class-page-header h1 {
   margin-top: 16px;
   margin-bottom: 8px;
   font-size: 32px;
-  color: inherit;
   text-align: left;
 }
 
@@ -28,15 +38,14 @@
   margin: 0;
   font-size: 20px;
   opacity: 0.8;
-  color: inherit;
   text-align: left;
 }
 
 .class-page-body {
   padding: 24px;
   flex: 1;
-  background-color: #0b131a;
-  color: #e0f4ff;
+  background-color: rgba(0, 1, 26, 0.97);
+  color: white;
 }
 
 .class-page-actions {
@@ -48,18 +57,23 @@
 .class-page-btn {
   padding: 10px 20px;
   font-size: 14px;
-  border: none;
+  border: 1px solid lightblue;
   border-radius: 10px;
   cursor: pointer;
-  background-color: #B3F5FF;
-  color: #052227;
+  background: linear-gradient(90deg, rgb(4, 97, 133) 0%, rgb(43, 23, 117));
+  color: white;
   font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+  transition: background 0.3s;
 }
 
 .class-page-btn:hover {
-  opacity: 0.85;
+  background: linear-gradient(90deg, rgb(13, 151, 205) 0%, rgb(85, 47, 223));
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .class-page-error {
   padding: 20px;
+  color: rgba(255, 255, 255, 0.7);
 }

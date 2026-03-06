@@ -1,6 +1,6 @@
 import CreateAccount from "./CreateAccount";
 import Navbar from "./Navbar";
-import HomePage from "./HomePage";
+import LoginPage from "./LoginPage";
 import AboutPage from "./AboutPage";
 import OurTeam from "./OurTeam";
 import ContactPage from "./ContactPage";
@@ -11,7 +11,7 @@ function Login() {
     <>
       <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/team" element={<OurTeam />} />
         <Route path="/contact" element={<ContactPage />} />

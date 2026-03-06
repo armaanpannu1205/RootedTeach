@@ -9,7 +9,7 @@ import Navbar from "./LoginView/Navbar";
 import AboutPage from "./LoginView/AboutPage";
 import OurTeam from "./LoginView/OurTeam";
 import ContactPage from "./LoginView/ContactPage";
-import HomePage from "./LoginView/HomePage";
+import LoginPage from "./LoginView/LoginPage";
 
 function App() {
   const [logIn, setLogin] = useState(false);
