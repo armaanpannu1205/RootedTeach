@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import "./HomePage.css";
+import "./LoginPage.css";
 import { Images } from "../Images/Images.js";
 import PersonIcon from "@mui/icons-material/Person";
 import LockIcon from "@mui/icons-material/Lock";
 
-function HomePage() {
+function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -50,4 +50,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default LoginPage;

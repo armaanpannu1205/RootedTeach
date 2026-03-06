@@ -5,7 +5,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
   const [title, setTitle] = useState('');
   const [season, setSeason] = useState('Winter');
   const [year, setYear] = useState('2026');
-  const [color, setColor] = useState('#B3F5FF');
+  const [color, setColor] = useState('#0f1646');
 
   const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
   const seasons = ['Fall', 'Winter', 'Spring', 'Summer'];
@@ -14,7 +14,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
     if (!isOpen) return;
     if (initialData) {
       setTitle(initialData.title || '');
-      setColor(initialData.color || '#B3F5FF');
+      setColor(initialData.color || '#0f1646');
       const [s, y] = (initialData.quarter || 'Winter 2026').split(' ');
       setSeason(s || 'Winter');
       setYear(y || '2026');
@@ -22,7 +22,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
       setTitle('');
       setSeason('Winter');
       setYear('2026');
-      setColor('#B3F5FF');
+      setColor('#0f1646');
     }
   }, [isOpen]);
 
