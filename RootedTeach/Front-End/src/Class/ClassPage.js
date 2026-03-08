@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import AddStudentsModal from './AddStudentsModal';
 import CreateAssignmentModal from './CreateAssignmentModal';
@@ -16,10 +16,20 @@ const getTextColor = (hexColor) => {
 
 const ClassPage = () => {
   const location = useLocation();
-  const { title, quarter, color } = location.state || {};
+  const { title, quarter, color, classId } = location.state || {};
 
   const [isAddStudentsOpen, setIsAddStudentsOpen] = useState(false);
   const [isCreateAssignmentOpen, setIsCreateAssignmentOpen] = useState(false);
+  const [assignments, setAssignments] = useState([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      const res = await fetch(`http://localhost:5000/api/assignments/class/${classId}`);
+      const data = await res.json();
+      setAssignments(data);
+    };
+    fetchAssignments();
+  }, [classId]);
 
   if (!title) {
     return (
@@ -41,6 +51,7 @@ const ClassPage = () => {
       <CreateAssignmentModal
         isOpen={isCreateAssignmentOpen}
         onClose={() => setIsCreateAssignmentOpen(false)}
+        classId={classId}
       />
 
       <div
@@ -65,7 +76,18 @@ const ClassPage = () => {
         </div>
 
         <h2>Class Information</h2>
-        <p>Syllabi and list of assignments will be displayed here.</p>
+        {assignments.length > 0 ? (
+          <ul>
+            {assignments.map((a) => (
+              <li key={a._id}>
+                <strong>{a.title}</strong> - Due: {new Date(a.dueDate).toLocaleDateString()}
+                <p>{a.description}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No assignments yet.</p>
+        )}
       </div>
 
     </div>

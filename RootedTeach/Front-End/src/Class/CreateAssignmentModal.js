@@ -3,17 +3,33 @@
 import React, { useState } from 'react';
 import './ClassPageModal.css';
 
-const CreateAssignmentModal = ({ isOpen, onClose }) => {
+const CreateAssignmentModal = ({ isOpen, onClose, classId }) => {
   const [assignmentName, setAssignmentName] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [description, setDescription] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: handle saving assignment
-    console.log('Assignment created:', { assignmentName, dueDate, description });
+    try {
+      const teacherId = localStorage.getItem('userId');
+      const res = await fetch('http://localhost:5000/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: assignmentName,
+          description: description,
+          dueDate: dueDate,
+          classId: classId,
+          teacherId: teacherId,
+        }),
+      });
+      const saved = await res.json();
+      console.log('Assignment saved:', saved);
+    } catch (err) {
+      console.error('Failed to save assignment:', err);
+    }
     setAssignmentName('');
     setDueDate('');
     setDescription('');
