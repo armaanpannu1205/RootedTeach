@@ -30,7 +30,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-module.exports = router;
 
 router.post('/login', async (req, res) => {
   try {
@@ -55,6 +54,7 @@ router.post('/login', async (req, res) => {
     res.json({
       token: token,
       user: {
+        _id: user._id,
         username: user.username,
         email: user.email,
         role: user.role

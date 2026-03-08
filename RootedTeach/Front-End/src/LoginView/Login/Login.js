@@ -28,6 +28,7 @@ function LoginPage() {
         
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.user.role);
+        localStorage.setItem('userId', data.user._id);
 
         if (data.user.role === 'Teacher') {
           navigate('/teacher');

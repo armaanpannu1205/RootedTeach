@@ -66,25 +66,42 @@
 //   export default Teacher; 
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import ClassTile from './ClassTile.js';
 import AddClassModal from './AddClassModal';
 import './Teacher.css';
 
-function Teacher({ teacher }) {
+function Teacher() {
   const [classes, setClasses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const teacherId = localStorage.getItem('userId');
 
-  const handleAddClass = (newClass) => {
-    if (editingIndex !== null) {
-      // Update existing class
-      setClasses((prev) =>
-        prev.map((cls, i) => (i === editingIndex ? newClass : cls))
-      );
-      setEditingIndex(null);
-    } else {
-      setClasses((prev) => [...prev, newClass]);
+  useEffect(() => {
+    const fetchClasses = async () => {
+      const res = await fetch('http://localhost:5000/api/classes');
+      const data = await res.json();
+      setClasses(data);
+    };
+    fetchClasses();
+  }, []);
+
+  const handleAddClass = async (newClass) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          className: newClass.title,
+          quarter: newClass.quarter,
+          color: newClass.color,
+          teacherId: teacherId,
+        }),
+      });
+      const saved = await res.json();
+      setClasses((prev) => [...prev, saved]);
+    } catch (err) {
+      console.error('Failed to save class:', err);
     }
     setIsModalOpen(false);
   };
@@ -123,10 +140,11 @@ function Teacher({ teacher }) {
             <div className="teacher-class-grid">
               {classes.map((cls, index) => (
                 <ClassTile
-                  key={index}
-                  title={cls.title}
+                  key={cls._id || index}
+                  title={cls.className}
                   quarter={cls.quarter}
                   color={cls.color}
+                  classId={cls._id}
                   onDelete={() => handleDelete(index)}
                   onEdit={() => handleEdit(index)}
                 />

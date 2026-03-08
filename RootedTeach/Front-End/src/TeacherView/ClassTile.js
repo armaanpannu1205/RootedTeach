@@ -12,7 +12,7 @@ const getTextColor = (hexColor) => {
   return brightness >= 128 ? 'black' : 'white';
 };
 
-const ClassTile = ({ title, quarter, color, onDelete, onEdit }) => {
+const ClassTile = ({ title, quarter, color, onDelete, onEdit, classId }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const textColor = getTextColor(color);
@@ -51,7 +51,7 @@ const ClassTile = ({ title, quarter, color, onDelete, onEdit }) => {
   return (
     <Link
       to="/class"
-      state={{ title, quarter, color }}
+      state={{ title, quarter, color, classId }}
       className="class-tile-link"
     >
       <div className="class-tile">

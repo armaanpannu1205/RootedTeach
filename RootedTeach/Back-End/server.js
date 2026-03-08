@@ -11,6 +11,12 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
+const classRoutes = require('./routes/classes');
+app.use('/api/classes', classRoutes);
+
+const assignmentRoutes = require('./routes/assignments');
+app.use('/api/assignments', assignmentRoutes);
+
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
