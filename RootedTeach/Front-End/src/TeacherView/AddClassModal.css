@@ -1,0 +1,134 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: rgba(0, 1, 26, 0.97);
+  padding: 24px;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #0f1646;
+  font-family: 'Inter', sans-serif;
+  color: white;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: white;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-form-label-text {
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modal-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.modal-input::placeholder {
+  color: rgba(255, 255, 255, 0.73);
+}
+
+.modal-input:focus {
+  border-color: #6ea8ff;
+  box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.191);
+  outline: none;
+}
+
+.modal-quarter-row {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-select {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.modal-select:focus {
+  border-color: #6ea8ff;
+  box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.191);
+  outline: none;
+}
+
+.modal-color-input {
+  width: 100%;
+  height: 40px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.modal-button-cancel {
+  padding: 8px 16px;
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #0f1646;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.modal-button-cancel:hover {
+  border-color: #6ea8ff;
+  color: white;
+}
+
+.modal-button-save {
+  padding: 8px 16px;
+  background: linear-gradient(90deg, rgb(4, 97, 133) 0%, rgb(43, 23, 117));
+  color: white;
+  border: 1px solid lightblue;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+  transition: background 0.3s;
+}
+
+.modal-button-save:hover {
+  background: linear-gradient(90deg, rgb(13, 151, 205) 0%, rgb(85, 47, 223));
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}

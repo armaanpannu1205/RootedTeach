@@ -43,9 +43,11 @@ html, body {
   padding: 70px 90px;
   border-radius: 10px;
   border: 3px solid #0f1646;
-  width: 600px;
-  max-width: 92vw;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  width: 100%; 
+  max-width: 550px;
+  min-height: 425px; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+  
 }
 
 .login-form h1 {
@@ -88,7 +90,7 @@ html, body {
 .input-icon {
   position: absolute;
   top: 50%;
-  right: 14px;
+  right:15px;
   transform: translateY(-50%);
   color: rgba(255, 255, 255, 0.4);
   pointer-events: none;
