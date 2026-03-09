@@ -1,4 +1,3 @@
-import CreateAccount from "./CreateAccount";
 import Navbar from "./Navbar";
 import HomePage from "./HomePage";
 import AboutPage from "./AboutPage";
