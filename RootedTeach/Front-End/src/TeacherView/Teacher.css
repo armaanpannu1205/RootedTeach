@@ -1,0 +1,86 @@
+.teacher-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  color: white;
+}
+
+.teacher-main {
+  flex: 3;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #0f1646;
+  background-color: rgba(0, 1, 26, 0.97);
+  height: 100%;
+}
+
+.teacher-main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.teacher-main-header h1 {
+  margin: 0;
+  font-size: 36px;
+  color: white;
+}
+
+.add-class-button {
+  padding: 8px 16px;
+  font-size: 16px;
+  background: linear-gradient(90deg, rgb(4, 97, 133) 0%, rgb(43, 23, 117));
+  color: white;
+  border: 1px solid lightblue;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: background 0.3s;
+}
+
+.add-class-button:hover {
+  background: linear-gradient(90deg, rgb(13, 151, 205) 0%, rgb(85, 47, 223));
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.teacher-class-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.teacher-class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.teacher-empty-state {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.teacher-sidebar {
+  flex: 1;
+  padding: 24px;
+  background-color: rgba(0, 1, 26, 0.85);
+  border-left: 1px solid #0f1646;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.teacher-sidebar h2 {
+  font-size: 18px;
+  color: #6ea8ff;
+}
