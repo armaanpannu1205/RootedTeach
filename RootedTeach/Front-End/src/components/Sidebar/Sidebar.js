@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import './Sidebar.css';
 
 export const COURSE_COLORS = [
@@ -13,84 +13,62 @@ export const COURSE_COLORS = [
   { gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)', accent: '#ff9a9e' },
 ];
 
-function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPageChange, logoSrc = null }) {
-  const navigate = useNavigate();
-  const [collapsed, setCollapsed]         = useState(false);
-  //const [showLogout, setShowLogout]        = useState(false); // FIX 1: inline logout toggle
-  //const profileRef                         = useRef(null);
+function Sidebar({
+  role = 'student',
+  course = null,
+  courses = [],
+  classes = [],
+  activePage = 'dashboard',
+  onPageChange,
+  username = null,
+}) {
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const isCourse   = course !== null && course !== undefined;
+  const isTeacher  = role === 'teacher';
 
-  // isCourseMode = true  → CourseDashboard, AssignmentDashboard  (← back button shown)
-  // isCourseMode = false → everything else                        (NO back button, EVER)
-  const isCourseMode = course !== null && course !== undefined;
+  // Avatar letter: first letter of username, or T/S fallback
+  const avatarLetter = username
+    ? username[0].toUpperCase()
+    : isTeacher ? 'T' : 'S';
 
-  /*
-  useEffect(() => {
-    function handleOutside(e) {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setShowLogout(false);
-      }
-    }
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, []);
-  */
-
-  function openCourse(c) {
-    localStorage.setItem('currentCourse', JSON.stringify(c));
-    navigate('/course');
-  }
+  const displayName = username || (isTeacher ? 'Teacher' : 'Student');
+  const roleLabel   = isTeacher ? 'Instructor' : 'Student';
 
   function handleLogout() {
     localStorage.clear();
     navigate('/');
   }
 
-  // ── Logo: use real image if provided, else emoji fallback ──
-  function LogoImg() {
-    if (logoSrc) return <img src={logoSrc} alt="logo" className="sidebar__logo-img" />;
-    return <span className="sidebar__logo">🌱</span>;
+  function openCourse(c) {
+    localStorage.setItem('currentCourse', JSON.stringify(c));
+    navigate('/course');
   }
 
-  function SidebarFooter({ showLabel }) {
+  // ── Course mode (CourseDashboard / AssignmentDashboard) ──
+  if (isCourse) {
     return (
-      <div className="sidebar__footer-fixed">
-        <button
-          className={`sidebar__nav-item ${activePage === 'account' ? 'active' : ''}`}
-          onClick={() => navigate('/account')}
-        >
-          <span className="sidebar__nav-icon">👤</span>
-          {showLabel && <span className="sidebar__nav-label">Profile</span>}
-        </button>
-        <button
-          className="sidebar__nav-item sidebar__nav-item--logout"
-          onClick={handleLogout}
-        >
-          <span className="sidebar__nav-icon">🚪</span>
-          {showLabel && <span className="sidebar__nav-label">Log out</span>}
-        </button>
-      </div>
-    );
-  }
-
-  if (isCourseMode) {
-    return (
-      <aside className="sidebar sidebar--course">
+      <aside className="sidebar">
         <div className="sidebar__header">
-          <button className="sidebar__back" onClick={() => navigate(-1)} title="Go back to the previous page">
+          <button
+            className="sidebar__back"
+            onClick={() => navigate(-1)}
+            title="Go back"
+          >
             ←
           </button>
           <div className="sidebar__course-header">
-            <div className="sidebar__course-code-label">{course.code}</div>
-            <div className="sidebar__course-name-label">{course.name}</div>
+            <div className="sidebar__course-code">{course.code}</div>
+            <div className="sidebar__course-name">{course.name}</div>
           </div>
         </div>
 
         <nav className="sidebar__nav">
           {[
-            { key: 'syllabus',    icon: '📋', label: 'Syllabus'       },
-            { key: 'grade',       icon: '📊', label: 'Grades'         },
-            { key: 'announce',    icon: '📢', label: 'Announcements'  },
-            { key: 'assignments', icon: '📝', label: 'Assignments'    },
+            { key: 'syllabus',    icon: '📋', label: 'Syllabus'      },
+            { key: 'grade',       icon: '📊', label: 'Grades'        },
+            { key: 'announce',    icon: '📢', label: 'Announcements' },
+            { key: 'assignments', icon: '📝', label: 'Assignments'   },
           ].map(({ key, icon, label }) => (
             <button
               key={key}
@@ -103,19 +81,89 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
           ))}
         </nav>
 
-        <SidebarFooter showLabel />
+        <div style={{ flex: 1 }} />
+
+        <SidebarFooter
+          avatarLetter={avatarLetter}
+          displayName={displayName}
+          roleLabel={roleLabel}
+          onLogout={handleLogout}
+          onProfile={() => navigate('/account')}
+        />
       </aside>
     );
   }
 
-  return (
-    <aside className="sidebar sidebar--dashboard">
-      {/* FIX 1: plain brand header — zero buttons */}
-      <div className="sidebar__header sidebar__header--brand-only">
-        <div className="sidebar__brand">
-          <LogoImg />
-          <span className="sidebar__brand-name">RootedTeach</span>
+  // ── Teacher dashboard mode ──
+  if (isTeacher) {
+    return (
+      <aside className="sidebar">
+        <div className="sidebar__header">
+          <span className="sidebar__logo-icon">🌱</span>
+          <span className="sidebar__logo-text">RootedTeach</span>
         </div>
+
+        <nav className="sidebar__nav">
+          <Link
+            to="/teacher"
+            className={`sidebar__nav-item ${location.pathname === '/teacher' ? 'active' : ''}`}
+          >
+            <span className="sidebar__nav-icon">🏠</span>
+            <span className="sidebar__nav-label">Dashboard</span>
+          </Link>
+        </nav>
+
+        {/* My Classes */}
+        <div className="sidebar__section-label">My Classes</div>
+        <div className="sidebar__class-list">
+          {classes.length === 0 ? (
+            <div className="sidebar__no-classes">No classes yet</div>
+          ) : (
+            classes.map((cls, index) => (
+              <Link
+                key={cls.id || index}
+                to="/class"
+                state={{
+                  title: cls.className,
+                  courseName: cls.courseName,
+                  quarter: cls.quarter,
+                  color: cls.color,
+                  classId: cls.id,
+                }}
+                className="sidebar__class-item"
+              >
+                <div
+                  className="sidebar__class-dot"
+                  style={{ background: cls.color || '#764ba2' }}
+                />
+                <div className="sidebar__class-info">
+                  <div className="sidebar__class-name">{cls.className}</div>
+                  <div className="sidebar__class-quarter">{cls.quarter}</div>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        <SidebarFooter
+          avatarLetter={avatarLetter}
+          displayName={displayName}
+          roleLabel={roleLabel}
+          onLogout={handleLogout}
+          onProfile={() => navigate('/account')}
+        />
+      </aside>
+    );
+  }
+
+  // ── Student dashboard mode ──
+  return (
+    <aside className="sidebar">
+      <div className="sidebar__header">
+        <span className="sidebar__logo-icon">🌱</span>
+        <span className="sidebar__logo-text">RootedTeach</span>
       </div>
 
       <nav className="sidebar__nav">
@@ -136,29 +184,72 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
         ))}
       </nav>
 
+      {/* My Classes */}
       {courses.length > 0 && (
-        <div className="sidebar__courses">
-          <div className="sidebar__section-title">My Classes</div>
-          {courses.map((c) => (
-            <button key={c.id} className="sidebar__course-item" onClick={() => openCourse(c)}>
-              <span
-                className="sidebar__course-dot"
-                style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].accent }}
-              />
-              <div className="sidebar__course-info">
-                <span className="sidebar__course-code">{c.className}</span>
-                <span className="sidebar__course-name">{c.className}</span>
-              </div>
-              {c.upcoming > 0 && <span className="sidebar__course-badge">{c.upcoming}</span>}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="sidebar__section-label">My Classes</div>
+          <div className="sidebar__class-list">
+            {courses.map((c) => (
+              <button
+                key={c.id}
+                className="sidebar__class-item"
+                onClick={() => openCourse(c)}
+              >
+                <div
+                  className="sidebar__class-dot"
+                  style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length]?.accent || '#667eea' }}
+                />
+                <div className="sidebar__class-info">
+                  <div className="sidebar__class-name">{c.code || c.className}</div>
+                  <div className="sidebar__class-quarter">{c.name || c.courseName}</div>
+                </div>
+                {c.upcoming > 0 && (
+                  <span className="sidebar__class-badge">{c.upcoming}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
-      <SidebarFooter showLabel />
+      <div style={{ flex: 1 }} />
+
+      <SidebarFooter
+        avatarLetter={avatarLetter}
+        displayName={displayName}
+        roleLabel={roleLabel}
+        onLogout={handleLogout}
+        onProfile={() => navigate('/account')}
+      />
     </aside>
   );
 }
 
+// ── Shared footer: logout + profile ──
+function SidebarFooter({ avatarLetter, displayName, roleLabel, onLogout, onProfile }) {
+  return (
+    <div className="sidebar__footer">
+      <button className="sidebar__logout-btn" onClick={onLogout}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16,17 21,12 16,7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Log Out
+      </button>
+      <button
+        className="sidebar__profile"
+        onClick={onProfile}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
+      >
+        <div className="sidebar__avatar">{avatarLetter}</div>
+        <div>
+          <div className="sidebar__profile-name">{displayName}</div>
+          <div className="sidebar__profile-role">{roleLabel}</div>
+        </div>
+      </button>
+    </div>
+  );
+}
 
 export default Sidebar;

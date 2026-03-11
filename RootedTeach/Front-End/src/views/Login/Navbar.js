@@ -8,7 +8,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 
 function Navbar() {
   return (
-    <nav>
+    <nav className="public-nav">
       <NavLink to="/">
         <img src={Images.Logo.src} alt="RootedTeach logo" className="logo-img" />
       </NavLink>

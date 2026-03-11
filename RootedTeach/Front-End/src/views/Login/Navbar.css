@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-nav {
+.public-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -13,6 +13,7 @@ nav {
   top: 0;
   z-index: 100;
 }
+
 .logo-img {
   height: 64px;
   width: auto;
@@ -27,7 +28,6 @@ nav {
   transform: scale(1.05);
 }
 
-/* Brand name — solid white, large, Outfit font */
 .LogoName {
   font-family: 'Outfit', sans-serif;
   font-size: 1.6rem;
@@ -38,7 +38,7 @@ nav {
   letter-spacing: -0.2px;
 }
 
-nav ul {
+.public-nav ul {
   display: flex;
   align-items: center;
   margin: 0;
@@ -46,11 +46,10 @@ nav ul {
   gap: 8px;
 }
 
-nav ul li {
+.public-nav ul li {
   list-style: none;
 }
 
-/* Links: solid white text, big enough to read clearly */
 .nav-link {
   display: flex;
   align-items: center;

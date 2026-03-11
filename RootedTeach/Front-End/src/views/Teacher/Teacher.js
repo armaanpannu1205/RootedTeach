@@ -1,6 +1,7 @@
 import React, { useState, useEffect} from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ClassTile from './ClassTile.js';
+import Sidebar from '../../components/Sidebar/Sidebar';
 import AddClassModal from './AddClassModal';
 import './Teacher.css';
 
@@ -9,7 +10,6 @@ function Teacher() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const teacherId = localStorage.getItem('userId');
-  const location = useLocation();
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -72,67 +72,7 @@ function Teacher() {
       />
 
       {/* ── Sidebar ── */}
-      <aside className="teacher-sidebar">
-        <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">🎓</div>
-          <span className="sidebar-logo-text">EduTrack</span>
-        </div>
-
-        <nav className="sidebar-nav">
-          <Link
-            to="/teacher"
-            className={`sidebar-nav-item ${location.pathname === '/teacher' ? 'active' : ''}`}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9,22 9,12 15,12 15,22"/>
-            </svg>
-            Dashboard
-          </Link>
-        </nav>
-
-        <div className="sidebar-section-label">My Classes</div>
-        <div className="sidebar-class-list">
-          {classes.length === 0 && (
-            <div className="sidebar-no-classes">No classes yet</div>
-          )}
-          {classes.map((cls, index) => (
-            <Link
-              key={cls._id || index}
-              to="/class"
-              state={{ title: cls.className, courseName: cls.courseName, quarter: cls.quarter, color: cls.color, classId: cls._id }}
-              className="sidebar-class-item"
-            >
-              <div className="sidebar-class-dot" style={{ background: cls.color || '#764ba2' }} />
-              <div className="sidebar-class-info">
-                <div className="sidebar-class-name">{cls.className}</div>
-                <div className="sidebar-class-quarter">{cls.quarter}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Spacer pushes profile to bottom */}
-        <div style={{ flex: 1 }} />
-
-        {/* Logout */}
-        <button onClick={handleLogout} className="sidebar-logout-btn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16,17 21,12 16,7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          Log Out
-        </button>
-
-        <div className="sidebar-profile">
-          <div className="sidebar-avatar">T</div>
-          <div>
-            <div className="sidebar-profile-name">Teacher</div>
-            <div className="sidebar-profile-role">Instructor</div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar role="teacher" classes={classes} />
 
       {/* ── Main ── */}
       <main className="teacher-main">
