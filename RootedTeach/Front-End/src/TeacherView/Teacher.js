@@ -79,7 +79,7 @@ function Teacher() {
 
   useEffect(() => {
     const fetchClasses = async () => {
-      const res = await fetch('http://localhost:5001/api/classes');
+      const res = await fetch('http://localhost:5000/api/classes');
       const data = await res.json();
       setClasses(data);
     };
@@ -88,7 +88,7 @@ function Teacher() {
 
   const handleAddClass = async (newClass) => {
     try {
-      const res = await fetch('http://localhost:5001/api/classes', {
+      const res = await fetch('http://localhost:5000/api/classes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

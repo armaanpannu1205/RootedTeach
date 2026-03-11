@@ -52,9 +52,9 @@ export default function LoginPage() {
     setErrorMsg("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5001/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
@@ -84,7 +84,7 @@ export default function LoginPage() {
       const idToken = await result.user.getIdToken();
 
       // Step 2: send the ID token to our backend to verify and get a JWT back
-      const res = await fetch("http://localhost:5001/api/auth/google", {
+      const res = await fetch("http://localhost:5000/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),

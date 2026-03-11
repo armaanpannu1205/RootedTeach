@@ -1,0 +1,178 @@
+/* =============================================
+   RootedTeach – Account.css
+   ============================================= */
+
+   .account-card {
+    background: var(--bg-card, #fffef9);
+    border-radius: var(--radius, 16px);
+    padding: 40px 44px;
+    max-width: 560px;
+    box-shadow: var(--shadow-card, 0 2px 12px rgba(26,26,46,0.06));
+    border: 1px solid rgba(26,26,46,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .account-avatar {
+    font-size: 64px;
+    line-height: 1;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #f4f1eb, #e8e3d8);
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(26,26,46,0.10);
+  }
+  
+  .account-name {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a2e);
+    letter-spacing: -0.4px;
+    margin-top: 4px;
+  }
+  
+  .account-email {
+    font-size: 14px;
+    color: var(--muted, #a09db0);
+    margin-bottom: 12px;
+  }
+  
+  .account-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 28px;
+    width: 100%;
+    margin: 16px 0 8px;
+  }
+  
+  .account-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .account-field label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted, #a09db0);
+  }
+  
+  .account-field span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary, #1a1a2e);
+  }
+  
+  .account-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .account-btn-edit {
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--accent, #e07a5f);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 4px 14px rgba(224,122,95,0.30);
+    transition: background 0.18s, transform 0.15s;
+  }
+  
+  .account-btn-edit:hover {
+    background: #d4694e;
+    transform: translateY(-1px);
+  }
+  
+  .account-btn-logout {
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+    color: var(--danger, #e05f5f);
+    border: 1.5px solid var(--danger, #e05f5f);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.18s, color 0.18s;
+  }
+  
+  .account-btn-logout:hover {
+    background: var(--danger, #e05f5f);
+    color: #fff;
+  }
+  
+  .account-btn-cancel {
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    background: rgba(26,26,46,0.06);
+    color: var(--text-secondary, #6b6880);
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.18s;
+  }
+  
+  .account-btn-cancel:hover {
+    background: rgba(26,26,46,0.12);
+  }
+  
+  .account-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    margin: 12px 0;
+  }
+  
+  .account-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .account-edit-field label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted, #a09db0);
+  }
+  
+  .account-edit-field input {
+    padding: 10px 14px;
+    border: 1.5px solid rgba(26,26,46,0.10);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg, #f4f1eb);
+    color: var(--text-primary, #1a1a2e);
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  
+  .account-edit-field input:focus {
+    border-color: var(--accent, #e07a5f);
+  }
+  
+  @media (max-width: 600px) {
+    .account-card { padding: 28px 20px; }
+    .account-grid { grid-template-columns: 1fr; }
+  }

@@ -71,9 +71,9 @@ export default function CreateAccount() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5001/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: `${firstName.trim()} ${lastName.trim()}`,
           email, password, role,
@@ -103,7 +103,7 @@ export default function CreateAccount() {
       const idToken = await result.user.getIdToken();
 
       // Step 2: send ID token + chosen role to our backend
-      const res = await fetch("http://localhost:5001/api/auth/google", {
+      const res = await fetch("http://localhost:5000/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken, role }),
