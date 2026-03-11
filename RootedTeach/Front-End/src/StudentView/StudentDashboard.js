@@ -26,7 +26,7 @@ useEffect(() => {
   const fetchCourses = async () => {
     try {
       const studentId = localStorage.getItem('userId');
-      const res = await fetch(`http://localhost:5001/api/classes/student/${studentId}`);
+      const res = await fetch(`http://localhost:5000/api/classes/student/${studentId}`);
       const data = await res.json();
       setCourses(data);
     } catch (err) {

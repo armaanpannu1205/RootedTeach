@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import './AssignmentDashboard.css';
-import { useEffect } from "react";
 
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };
 
@@ -94,7 +93,7 @@ function AssignmentDashboard() {
       try {
         const studentId = localStorage.getItem('userId');
         const classId = course.id;
-        const res = await fetch(`http://localhost:5001/api/assignments/class/${classId}`);
+        const res = await fetch(`http://localhost:5000/api/assignments/class/${classId}`);
         const data = await res.json();
         const mapped = data.map(a => {
           const submission = a.submissions?.find(s => s.student?._id === studentId);
