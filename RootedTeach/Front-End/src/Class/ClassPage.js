@@ -24,7 +24,7 @@ const ClassPage = () => {
 
   useEffect(() => {
     const fetchAssignments = async () => {
-      const res = await fetch(`http://localhost:5000/api/assignments/class/${classId}`);
+      const res = await fetch(`http://localhost:5001/api/assignments/class/${classId}`);
       const data = await res.json();
       setAssignments(data);
     };
