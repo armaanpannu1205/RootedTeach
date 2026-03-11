@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import './AssignmentDashboard.css';
 
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };
 
+/*
 const INITIAL_ASSIGNMENTS = [
   { id: 1, title: 'Assignment 1', due: '2025-11-05 23:59', points: 100, type: 'Submit the file', status: 'submitted', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3', submittedFile: 'assignment1_NAME.py', submittedAt: '2025-11-04 20:31' },
   { id: 2, title: 'Assignment 2', due: '2025-11-19 23:59', points: 100, type: 'Submit the file', status: 'submitted', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3', submittedFile: 'assignment2_NAME.py', submittedAt: '2025-11-18 15:44' },
@@ -12,6 +13,7 @@ const INITIAL_ASSIGNMENTS = [
   { id: 4, title: 'Quiz 1', due: '2025-11-10 14:00', points: 50, type: 'Online Test', status: 'submitted', desc: 'Description', requirements: 'Time Limit: 60min, Open Book', submittedFile: 'Submitted', submittedAt: '2025-11-10 13:55' },
   { id: 5, title: 'Final Project', due: '2025-12-20 23:59', points: 200, type: 'Submit the file', status: 'pending', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4' },
 ];
+*/
 
 function getDaysLeft(due) {
   const d = new Date(due) - new Date();
@@ -28,7 +30,7 @@ function AssignmentDashboard() {
     catch { return DEFAULT_COURSE; }
   })();
 
-  const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
+  const [assignments, setAssignments] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState('all');
   const [file, setFile] = useState(null);
@@ -36,6 +38,36 @@ function AssignmentDashboard() {
   const [toast, setToast] = useState('');
   const [aiResult, setAiResult] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const studentId = localStorage.getItem('userId');
+        const classId = course.id;
+        const res = await fetch(`http://localhost:5001/api/assignments/class/${classId}`);
+        const data = await res.json();
+        const mapped = data.map(a => {
+          const submission = a.submissions?.find(s => s.student?._id === studentId);
+          return {
+            id: a.id,
+            title: a.title,
+            due: a.dueDate ? new Date(a.dueDate).toLocaleString() : 'No due date',
+            points: a.points || 100,
+            type: 'Submit the file',
+            status: submission ? 'submitted' : 'pending',
+            desc: a.description || '',
+            requirements: '',
+            submittedFile: submission?.fileName || null,
+            submittedAt: submission?.submittedAt || null,
+          };
+        });
+        setAssignments(mapped);
+      } catch (err) {
+        console.error('Failed to fetch assignments:', err);
+      }
+    };
+    fetchAssignments();
+  }, [course.id]);
 
   const filtered = assignments.filter((a) => {
     if (filter === 'pending') return a.status === 'pending';
