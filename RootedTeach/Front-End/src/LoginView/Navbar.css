@@ -1,65 +1,85 @@
-nav{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(90deg, #070b1f, #0e1a3a, #070b1f);
-    box-shadow: 0 6px 25px rgba(0, 153, 255, 0.15);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #060a1c, #0d1836, #060a1c);
+  box-shadow: 0 4px 30px rgba(0, 120, 255, 0.2);
+  border-bottom: 2px solid rgba(79, 172, 254, 0.2);
+  padding: 0 48px;
+  height: 96px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-nav .title{
-    color: white;
-    font-weight: bold;
-    text-decoration: none;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-nav ul{
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-}   
-
-nav ul li{
-    list-style: none;
-}
-
-nav ul li a{
-    display: block;
-    text-decoration: none;
-    color: white;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-}
-
-nav ul li a:hover{
-    background-color: rgb(8, 56, 158);
-}
-.LogoName {
-  color: white;
-  font-family:"Inter";
-  margin-right: auto;
-}
 .logo-img {
-    height: 100px;      
-    width: auto;
-    border-radius: 50%;
-    object-fit: cover;
-    filter: drop-shadow(0 0 6px rgba(76,201,240,0.5));
-  }
+  height: 64px;
+  width: auto;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: drop-shadow(0 0 10px rgba(76, 201, 240, 0.6));
+  transition: filter 0.3s, transform 0.3s;
+}
 
-  .nav-link {
-    display: flex;            
-    align-items: center;     
-    gap: 6px;                 
-    text-decoration: none;
-    color: white;
-    font-size: 1.2rem;         
-    font-weight: 500;
-    border-radius: 6px;
-    transition: 0.2s ease;
-    margin-right: 5px
-  }
+.logo-img:hover {
+  filter: drop-shadow(0 0 18px rgba(76, 201, 240, 0.9));
+  transform: scale(1.05);
+}
+
+/* Brand name — solid white, large, Outfit font */
+.LogoName {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 auto 0 16px;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+nav ul {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+
+nav ul li {
+  list-style: none;
+}
+
+/* Links: solid white text, big enough to read clearly */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.nav-link .MuiSvgIcon-root {
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+.nav-link:hover {
+  background: rgba(79, 172, 254, 0.14);
+  border-color: rgba(79, 172, 254, 0.3);
+}
+
+.nav-link.active {
+  background: rgba(79, 172, 254, 0.18);
+  border-color: rgba(79, 172, 254, 0.4);
+  font-weight: 600;
+}

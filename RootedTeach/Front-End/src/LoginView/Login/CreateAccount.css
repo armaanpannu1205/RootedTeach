@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+/* ════════════════════════════
+   BACKGROUND
+════════════════════════════ */
+.create-account-container {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('https://i.imgur.com/YrZFSSN.jpg');
+  background-size: cover;
+  background-repeat: repeat;
+  animation: moveBg 40s linear infinite;
+  padding: 40px 20px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+@keyframes moveBg {
+  0%   { background-position: 0 0; }
+  100% { background-position: 1000px 0; }
+}
+
+/* ════════════════════════════
+   CARD
+════════════════════════════ */
+.create-account-card {
+  width: 100%;
+  max-width: 640px;
+  background: rgba(0, 1, 26, 0.85);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
+  padding: 52px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: white;
+}
+
+/* ════════════════════════════
+   HEADER
+════════════════════════════ */
+.create-account-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.create-account-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4facfe 0%, #7b2fff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  color: white;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+}
+
+.create-account-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.create-account-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+/* ════════════════════════════
+   ROLE TOGGLE
+════════════════════════════ */
+.role-toggle-wrapper {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+/* Override MUI ToggleButton styles */
+.role-toggle-wrapper .MuiToggleButton-root {
+  flex: 1;
+  border: none !important;
+  border-radius: 9px !important;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: none;
+  padding: 10px 0;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.role-toggle-wrapper .MuiToggleButton-root:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.role-toggle-wrapper .MuiToggleButton-root.Mui-selected {
+  background: linear-gradient(135deg, #4facfe 0%, #7b2fff 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.3);
+}
+
+/* ════════════════════════════
+   PASSWORD STRENGTH BAR
+════════════════════════════ */
+.strength-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -8px;
+}
+
+.strength-label {
+  font-size: 0.72rem;
+  min-width: 60px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ════════════════════════════
+   SUBMIT BUTTON OVERRIDE
+════════════════════════════ */
+.create-account-card .MuiButton-root {
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* ════════════════════════════
+   FOOTER LINK
+════════════════════════════ */
+.create-account-footer {
+  text-align: center;
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.create-account-footer .link {
+  color: #6ea8ff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.create-account-footer .link:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+/* ════════════════════════════
+   RESPONSIVE
+════════════════════════════ */
+@media (max-width: 650px) {
+  .create-account-card {
+    padding: 36px 24px;
+  }
+}

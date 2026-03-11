@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const Assignment = require('../models/Assignment');
+const { db } = require('../firebase');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-// make uploads folder if it doesn't exist
+// Make uploads folder if it doesn't exist
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 const upload = multer({ storage });
 
@@ -18,13 +18,19 @@ const upload = multer({ storage });
 router.post('/', async (req, res) => {
   try {
     const { title, description, dueDate, classId, teacherId } = req.body;
-    const newAssignment = new Assignment({
-      title, description, dueDate,
+
+    const newAssignment = {
+      title,
+      description: description || null,
+      dueDate: dueDate || null,
       class: classId,
       createdBy: teacherId,
-    });
-    await newAssignment.save();
-    res.status(201).json(newAssignment);
+      submissions: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    const ref = await db.collection('assignments').add(newAssignment);
+    res.status(201).json({ id: ref.id, ...newAssignment });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
@@ -34,9 +40,31 @@ router.post('/', async (req, res) => {
 // Get assignments by class
 router.get('/class/:classId', async (req, res) => {
   try {
-    const assignments = await Assignment.find({ class: req.params.classId })
-      .populate('createdBy', 'username')
-      .populate('submissions.student', 'username email');
+    const snapshot = await db.collection('assignments')
+      .where('class', '==', req.params.classId)
+      .get();
+
+    const assignments = [];
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+
+      // Populate createdBy username
+      const teacherDoc = await db.collection('users').doc(data.createdBy).get();
+      const teacher = teacherDoc.exists ? { _id: teacherDoc.id, username: teacherDoc.data().username } : null;
+
+      // Populate student info in submissions
+      const submissions = [];
+      for (const sub of data.submissions || []) {
+        const studentDoc = await db.collection('users').doc(sub.student).get();
+        const student = studentDoc.exists
+          ? { _id: studentDoc.id, username: studentDoc.data().username, email: studentDoc.data().email }
+          : null;
+        submissions.push({ ...sub, student });
+      }
+
+      assignments.push({ id: doc.id, ...data, createdBy: teacher, submissions });
+    }
+
     res.json(assignments);
   } catch (error) {
     console.error(error);
@@ -48,15 +76,18 @@ router.get('/class/:classId', async (req, res) => {
 router.post('/:id/submit', upload.single('file'), async (req, res) => {
   try {
     const { studentId } = req.body;
-    const assignment = await Assignment.findById(req.params.id);
-    if (!assignment) return res.status(404).json({ message: 'Assignment not found' });
+    const assignmentRef = db.collection('assignments').doc(req.params.id);
+    const assignmentDoc = await assignmentRef.get();
+
+    if (!assignmentDoc.exists) return res.status(404).json({ message: 'Assignment not found' });
+
+    const assignment = assignmentDoc.data();
 
     let aiScore = null;
     let aiLabel = null;
     let filePath = null;
     let fileName = null;
 
-    // if a file was uploaded, read it and run AI detection
     if (req.file) {
       filePath = req.file.path;
       fileName = req.file.originalname;
@@ -65,12 +96,11 @@ router.post('/:id/submit', upload.single('file'), async (req, res) => {
 
       if (codeExtensions.includes(ext)) {
         try {
-          // call ML service
           const code = fs.readFileSync(filePath, 'utf-8');
           const response = await fetch('http://localhost:3001/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code })
+            body: JSON.stringify({ code }),
           });
           const result = await response.json();
           aiScore = result.score;
@@ -81,34 +111,28 @@ router.post('/:id/submit', upload.single('file'), async (req, res) => {
       }
     }
 
-    const existing = assignment.submissions.find(
-      s => s.student.toString() === studentId
-    );
+    const submissions = assignment.submissions || [];
+    const existingIndex = submissions.findIndex(s => s.student === studentId);
 
-    if (existing) {
-      existing.submittedAt = Date.now();
-      existing.filePath = filePath;
-      existing.fileName = fileName;
-      existing.aiScore = aiScore;
-      existing.aiLabel = aiLabel;
-    } else {
-      assignment.submissions.push({
-        student: studentId,
-        filePath,
-        fileName,
-        aiScore,
-        aiLabel,
-      });
-    }
-
-    await assignment.save();
-    res.json({
-      assignment,
+    const newSubmission = {
+      student: studentId,
+      filePath,
+      fileName,
       aiScore,
       aiLabel,
-      fileName,
-    });
+      score: null,
+      submittedAt: new Date().toISOString(),
+    };
 
+    if (existingIndex >= 0) {
+      submissions[existingIndex] = { ...submissions[existingIndex], ...newSubmission };
+    } else {
+      submissions.push(newSubmission);
+    }
+
+    await assignmentRef.update({ submissions });
+
+    res.json({ message: 'Submitted successfully', aiScore, aiLabel, fileName });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
