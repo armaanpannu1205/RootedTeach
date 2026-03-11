@@ -11,13 +11,14 @@ import { initializeApp, getApps } from "firebase/app";
 // Firebase is only used here to get the Google ID token from the popup
 // All actual user storage and verification happens on our Express backend
 const firebaseConfig = {
-  apiKey: "AIzaSyCFatSe4ClkJ6AGTCpyXC-2iX5TRCtaOuY",
-  authDomain: "rootedteach.firebaseapp.com",
-  projectId: "rootedteach",
-  storageBucket: "rootedteach.firebasestorage.app",
-  messagingSenderId: "31712574441",
-  appId: "1:31712574441:web:83606dabbef728c60e6978",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
+
 
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(firebaseApp);
