@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import './AssignmentDashboard.css';
@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };
 
+/*
 const INITIAL_ASSIGNMENTS = [
     { id: 1,
      title: 'Assignment 1',
@@ -62,6 +63,7 @@ const INITIAL_ASSIGNMENTS = [
      desc: 'Description',
      requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4' },
 ];
+*/
 
 function getDaysLeft(due) {
   const d = new Date(due) - new Date();
@@ -78,7 +80,8 @@ function AssignmentDashboard() {
     catch { return DEFAULT_COURSE; }
   })();
 
-  const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
+  const [assignments, setAssignments] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState('all');
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState('');
@@ -86,29 +89,35 @@ function AssignmentDashboard() {
   const [aiResult, setAiResult] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
 
-  const [selectedId, setSelectedId] = useState(() => {
-    try {
-      const stored = localStorage.getItem('selectedAssignmentId');
-      if (stored) {
-        localStorage.removeItem('selectedAssignmentId');
-        // Try matching by numeric id first
-        const numId = parseInt(stored, 10);
-        if (!isNaN(numId) && INITIAL_ASSIGNMENTS.find(a => a.id === numId)) {
-          return numId;
-        }
-        // Fallback: match by title string
-        const byTitle = INITIAL_ASSIGNMENTS.find(
-          a => a.title.toLowerCase() === stored.toLowerCase()
-        );
-        if (byTitle) return byTitle.id;
-      }
-    } catch {}
-    return null;
-  });
-
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant'});
-  }, []);
+    const fetchAssignments = async () => {
+      try {
+        const studentId = localStorage.getItem('userId');
+        const classId = course.id;
+        const res = await fetch(`http://localhost:5001/api/assignments/class/${classId}`);
+        const data = await res.json();
+        const mapped = data.map(a => {
+          const submission = a.submissions?.find(s => s.student?._id === studentId);
+          return {
+            id: a.id,
+            title: a.title,
+            due: a.dueDate ? new Date(a.dueDate).toLocaleString() : 'No due date',
+            points: a.points || 100,
+            type: 'Submit the file',
+            status: submission ? 'submitted' : 'pending',
+            desc: a.description || '',
+            requirements: '',
+            submittedFile: submission?.fileName || null,
+            submittedAt: submission?.submittedAt || null,
+          };
+        });
+        setAssignments(mapped);
+      } catch (err) {
+        console.error('Failed to fetch assignments:', err);
+      }
+    };
+    fetchAssignments();
+  }, [course.id]);
 
   const filtered = assignments.filter((a) => {
     if (filter === 'pending') return a.status === 'pending';

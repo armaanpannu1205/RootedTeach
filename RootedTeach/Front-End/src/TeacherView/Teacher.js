@@ -166,12 +166,12 @@ function Teacher() {
             <div className="teacher-class-grid">
               {classes.map((cls, index) => (
                 <ClassTile
-                  key={cls._id || index}
+                  key={cls.id || index}
                   title={cls.className}
                   courseName={cls.courseName}
                   quarter={cls.quarter}
                   color={cls.color}
-                  classId={cls._id}
+                  classId={cls.id}
                   onDelete={() => handleDelete(index)}
                   onEdit={() => handleEdit(index)}
                 />

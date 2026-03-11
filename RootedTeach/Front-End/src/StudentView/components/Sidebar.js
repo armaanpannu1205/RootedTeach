@@ -157,8 +157,8 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
               <span className="sidebar__course-dot" 
                     style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].accent }} />
               <div className="sidebar__course-info">
-                <span className="sidebar__course-code">{c.code}</span>
-                <span className="sidebar__course-name">{c.name}</span>
+                <span className="sidebar__course-code">{c.className}</span>
+                <span className="sidebar__course-name">{c.className}</span>
               </div>
               {c.upcoming > 0 &&  (
                 <span className="sidebar__course-badge">{c.upcoming}</span>
