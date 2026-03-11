@@ -1,111 +1,132 @@
-.class-tile-link {
-  text-decoration: none;
-}
-
 .class-tile {
-  aspect-ratio: 3 / 2;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(26,26,46,0.05);
+  cursor: pointer;
+  transition: box-shadow var(--transition), transform var(--transition);
   display: flex;
   flex-direction: column;
-  background-color: #0d1f2d;
-  border: 1px solid #1a3040;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s;
 }
 
 .class-tile:hover {
-  transform: scale(1.02);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
 }
 
+/* ── Colored header ── */
 .class-tile-header {
-  flex: 2;
-  padding-left: 16px;
+  height: 96px;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  align-items: flex-end;
+  padding: 16px 20px;
   position: relative;
 }
 
+.class-tile-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.08);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.class-tile:hover .class-tile-header::after { opacity: 1; }
+
 .class-tile-header h3 {
-  margin: 0;
+  font-family: 'Fraunces', serif;
   font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  position: relative;
+  z-index: 1;
 }
 
-.class-tile-header p {
-  margin: 0;
-  font-size: 18px;
-  opacity: 0.5;
-  padding-bottom: 7px;
-}
-
+/* ── Card body ── */
 .class-tile-body {
+  padding: 16px 20px 18px;
   flex: 1;
-  background-color: #0a1720;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-/* Three-dot menu */
+.class-tile-course-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.class-tile-course-name--empty {
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 300;
+}
+
+.class-tile-quarter {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+/* ── 3-dot menu ── */
 .class-tile-menu-btn {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(0, 0, 0, 0.25);
-  border: none;
-  border-radius: 50%;
   width: 28px;
   height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.2);
+  color: rgba(255,255,255,0.9);
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--transition), background var(--transition);
   z-index: 10;
+  font-family: inherit;
 }
 
-.class-tile:hover .class-tile-menu-btn {
-  opacity: 1;
-}
-
-.class-tile-menu-btn:hover {
-  background: rgba(0, 0, 0, 0.45);
-}
+.class-tile:hover .class-tile-menu-btn { opacity: 1; }
+.class-tile-menu-btn:hover { background: rgba(0,0,0,0.4); }
 
 .class-tile-dropdown {
   position: absolute;
-  top: 40px;
+  top: 38px;
   right: 10px;
-  background-color: #0d1f2d;
-  border: 1px solid #1a3040;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(26,26,46,0.16);
   overflow: hidden;
   z-index: 20;
   min-width: 110px;
+  border: 1px solid rgba(26,26,46,0.08);
 }
 
 .class-tile-dropdown button {
   display: block;
   width: 100%;
   padding: 10px 16px;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition);
   background: none;
   border: none;
-  color: #e0f4ff;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
 }
 
-.class-tile-dropdown button:hover {
-  background-color: #1a3040;
-}
-
-.class-tile-dropdown button.delete {
-  color: #ff6b6b;
-}
-
-.class-tile-dropdown button.delete:hover {
-  background-color: #2d1a1a;
-}
+.class-tile-dropdown button:hover { background: var(--bg); }
+.class-tile-dropdown button.delete { color: #e53e3e; }
+.class-tile-dropdown button.delete:hover { background: #fff5f5; }
