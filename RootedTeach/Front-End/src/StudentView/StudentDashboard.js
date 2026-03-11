@@ -67,10 +67,10 @@ function StudentDashboard() {
         <div className="topbar">
           <div>
             <h1>Dashboard</h1>
-            <p className="greeting">Hi 👋</p>
+            <p className="greeting">Welcome to RootedTeach 👋</p>
           </div>
           <button className="add-btn" onClick={() => setShowModal(true)}>
-            + add class
+            + Add class
           </button>
         </div>
 

@@ -2,15 +2,65 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import './AssignmentDashboard.css';
+import { useEffect } from "react";
 
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };
 
 const INITIAL_ASSIGNMENTS = [
-  { id: 1, title: 'Assignment 1', due: '2025-11-05 23:59', points: 100, type: 'Submit the file', status: 'submitted', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3', submittedFile: 'assignment1_NAME.py', submittedAt: '2025-11-04 20:31' },
-  { id: 2, title: 'Assignment 2', due: '2025-11-19 23:59', points: 100, type: 'Submit the file', status: 'submitted', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3', submittedFile: 'assignment2_NAME.py', submittedAt: '2025-11-18 15:44' },
-  { id: 3, title: 'Assignment 3', due: '2025-11-28 23:59', points: 100, type: 'Submit the file', status: 'pending', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3' },
-  { id: 4, title: 'Quiz 1', due: '2025-11-10 14:00', points: 50, type: 'Online Test', status: 'submitted', desc: 'Description', requirements: 'Time Limit: 60min, Open Book', submittedFile: 'Submitted', submittedAt: '2025-11-10 13:55' },
-  { id: 5, title: 'Final Project', due: '2025-12-20 23:59', points: 200, type: 'Submit the file', status: 'pending', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4' },
+    { id: 1,
+     title: 'Assignment 1',
+     due: '2025-11-05 23:59',
+     points: 100,
+     type: 'Submit the file',
+     status: 'submitted',
+     desc: 'Description',
+     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
+     submittedFile: 'assignment1_NAME.py',
+     submittedAt: '2025-11-04 20:31',
+     grade: 92,
+     feddback: 'Great' },
+  
+    { id: 2,
+     title: 'Assignment 2',
+     due: '2025-11-19 23:59',
+     points: 100,
+     type: 'Submit the file',
+     status: 'submitted',
+     desc: 'Description',
+     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
+     submittedFile: 'assignment2_NAME.py',
+     submittedAt: '2025-11-18 15:44',
+     grade: 88,
+     feedback: 'Good' },
+  
+    { id: 3,
+     title: 'Assignment 3',
+     due: '2025-11-28 23:59',
+     points: 100,
+     type: 'Submit the file',
+     status: 'pending',
+     desc: 'Description',
+     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3' },
+  
+    { id: 4,
+     title: 'Quiz 1',
+     due: '2025-11-10 14:00',
+     points: 50,
+     type: 'Online Test',
+     status: 'submitted',
+     desc: 'Description',
+     requirements: 'Time Limit: 60min, Open Book',
+     submittedFile: 'Submitted',
+     submittedAt: '2025-11-10 13:55' },
+    
+    { id: 5,
+     title: 'Final Project',
+     due: '2025-12-20 23:59',
+     points: 200,
+     type: 'Submit the file',
+     status: 'pending',
+     desc: 'Description',
+     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4' },
 ];
 
 function getDaysLeft(due) {
@@ -29,13 +79,36 @@ function AssignmentDashboard() {
   })();
 
   const [assignments, setAssignments] = useState(INITIAL_ASSIGNMENTS);
-  const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState('all');
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState('');
   const [toast, setToast] = useState('');
   const [aiResult, setAiResult] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
+
+  const [selectedId, setSelectedId] = useState(() => {
+    try {
+      const stored = localStorage.getItem('selectedAssignmentId');
+      if (stored) {
+        localStorage.removeItem('selectedAssignmentId');
+        // Try matching by numeric id first
+        const numId = parseInt(stored, 10);
+        if (!isNaN(numId) && INITIAL_ASSIGNMENTS.find(a => a.id === numId)) {
+          return numId;
+        }
+        // Fallback: match by title string
+        const byTitle = INITIAL_ASSIGNMENTS.find(
+          a => a.title.toLowerCase() === stored.toLowerCase()
+        );
+        if (byTitle) return byTitle.id;
+      }
+    } catch {}
+    return null;
+  });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant'});
+  }, []);
 
   const filtered = assignments.filter((a) => {
     if (filter === 'pending') return a.status === 'pending';
@@ -46,59 +119,30 @@ function AssignmentDashboard() {
   const currentSel = assignments.find((a) => a.id === selectedId) || null;
 
   function handleFileChange(e) {
-    if (e.target.files[0]) {
+    if (e.target.files[0])
       setFile(e.target.files[0]);
-      setAiResult(null);
-    }
   }
 
-  async function handleSubmit() {
+  function handleSubmit() {
+    if (!currentSel) return;
     if (!file && currentSel.type === 'Submit the file') {
-      alert('Select a file');
+      alert('Please select a file first.');
       return;
     }
-
-    setAnalyzing(true);
-    setAiResult(null);
-
-    try {
-      // read file as text
-      const code = await file.text();
-
-      // call ML API directly
-      const res = await fetch('http://localhost:3001/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
-
-      const data = await res.json();
-
-      if (data.score !== undefined) {
-        setAiResult({ score: data.score, label: data.label });
-      }
-
-    } catch (err) {
-      console.warn('ML API unavailable, skipping AI detection:', err.message);
-    } finally {
-      setAnalyzing(false);
-    }
-
-    // update local state regardless of ML result
     const now = new Date().toLocaleString();
-    setAssignments(prev =>
-      prev.map(a =>
+    setAssignments((prev) =>
+      prev.map((a) =>
         a.id === currentSel.id
-          ? { ...a, status: 'submitted', submittedFile: file?.name || 'Submitted', submittedAt: now }
+          ? { ...a, status: 'submitted', submittedFile: file ? file.name : 'Submitted', submittedAt: now }
           : a
       )
     );
-
     setFile(null);
     setComment('');
     setToast('Submitted successfully!');
     setTimeout(() => setToast(''), 3000);
   }
+
 
   return (
     <div className="app-layout">
