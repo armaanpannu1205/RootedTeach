@@ -3,22 +3,39 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar, { COURSE_COLORS } from './components/Sidebar';
 import './StudentDashboard.css';
 
-const SAMPLE_COURSES = [
-  { id: 'cs35l', code: 'CS 35L', name: 'Software Construction', prof: 'Eggert', color: 0, assignments: 3, upcoming: 1 },
-  { id: 'math161', code: 'MATH 161', name: 'Applied Numerical Methods', prof: 'Clifton', color: 1, assignments: 5, upcoming: 2 },
-  { id: 'cs180', code: 'CS 180', name: 'Introduction to Algorithms and Complexity', prof: 'Park', color: 2, assignments: 2, upcoming: 0 },
-];
+//const SAMPLE_COURSES = [
+//  { id: 'cs35l', code: 'CS 35L', name: 'Software Construction', prof: 'Eggert', color: 0, assignments: 3, upcoming: 1 },
+//  { id: 'math161', code: 'MATH 161', name: 'Applied Numerical Methods', prof: 'Clifton', color: 1, assignments: 5, upcoming: 2 },
+//  { id: 'cs180', code: 'CS 180', name: 'Introduction to Algorithms and Complexity', prof: 'Park', color: 2, assignments: 2, upcoming: 0 },
+//];
 
 function StudentDashboard() {
   const navigate = useNavigate();
-  const [courses, setCourses] = useState(() => {
+/*  const [courses, setCourses] = useState(() => {
     try {
       const saved = localStorage.getItem('courses');
       return saved ? JSON.parse(saved) : SAMPLE_COURSES;
     } catch {
       return SAMPLE_COURSES;
     }
-  });
+  }); */
+
+const [courses, setCourses] = useState([]);
+
+useEffect(() => {
+  const fetchCourses = async () => {
+    try {
+      const studentId = localStorage.getItem('userId');
+      const res = await fetch(`http://localhost:5001/api/classes/student/${studentId}`);
+      const data = await res.json();
+      setCourses(data);
+    } catch (err) {
+      console.error('Failed to fetch courses:', err);
+    }
+  };
+  fetchCourses();
+}, []);
+
   const [showModal, setShowModal] = useState(false);
   const [code, setCode] = useState('');
   const [toast, setToast] = useState('');
@@ -80,31 +97,31 @@ function StudentDashboard() {
             <div className="stat-label">already taking</div>
           </div>
           <div className="stat-card">
-            <div className="stat-val">{courses.reduce((a, c) => a + c.assignments, 0)}</div>
+            {Array.isArray(courses) ? courses.reduce((a, c) => a + c.assignments, 0) : 0}
             <div className="stat-label">Assignments</div>
-          </div>
+          </div>  
           <div className="stat-card">
-            <div className="stat-val">{courses.reduce((a, c) => a + c.upcoming, 0)}</div>
+            {Array.isArray(courses) ? courses.reduce((a, c) => a + c.upcoming, 0) : 0}
             <div className="stat-label">Due upcoming</div>
           </div>
         </div>
 
         <div className="section-title">My classes ({courses.length})</div>
         <div className="courses-grid">
-          {courses.length === 0 && (
+          {(!Array.isArray(courses) || courses.length === 0) && (
             <div className="empty-state">
               <div className="empty-icon">📚</div>
               <div>You have no class yet.<br />Please enter the code to add the class.</div>
             </div>
           )}
-          {courses.map((c) => (
-            <div className="course-card" key={c.id}>
+          {Array.isArray(courses) && courses.map((c) => (
+            <div className="course-card" key={c._id}>
             <div
               className="card-header"
-              style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].gradient }}
+              style={{ backgroundColor: c.color || '#0f1646' }}
               onClick={() => openCourse(c)}
             >
-              <div className="card-code">{c.code}</div>
+              <div className="card-code">{c.className}</div>
               <button
                 className="card-delete-btn"
                 onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}
@@ -114,8 +131,8 @@ function StudentDashboard() {
               </button>
             </div>
             <div className="card-body" onClick={() => openCourse(c)}>
-              <div className="card-title">{c.name}</div>
-              <div className="card-prof">{c.prof}</div>
+              <div className="card-title">{c.className}</div>
+              <div className="card-prof">{c.teacher?.username}</div>
               <div className="card-meta">
                 <span className="badge">{c.assignments} Assignment</span>
                 {c.upcoming > 0 && (

@@ -154,4 +154,17 @@ router.post('/:id/students', async (req, res) => {
   }
 });
 
+router.get('/student/:studentId', async (req, res) => {
+  try {
+    const snapshot = await db.collection('classes')
+      .where('students', 'array-contains', req.params.studentId)
+      .get();
+    const classes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(classes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

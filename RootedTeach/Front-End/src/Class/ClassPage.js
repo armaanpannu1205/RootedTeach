@@ -47,6 +47,7 @@ const ClassPage = () => {
       <AddStudentsModal
         isOpen={isAddStudentsOpen}
         onClose={() => setIsAddStudentsOpen(false)}
+        classId={classId}
       />
       <CreateAssignmentModal
         isOpen={isCreateAssignmentOpen}
@@ -79,7 +80,7 @@ const ClassPage = () => {
         {assignments.length > 0 ? (
           <ul>
             {assignments.map((a) => (
-              <li key={a._id}>
+              <li key={a.id}>
                 <strong>{a.title}</strong> - Due: {new Date(a.dueDate).toLocaleDateString()}
                 <p>{a.description}</p>
               </li>

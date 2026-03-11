@@ -88,10 +88,10 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
           <div className="sidebar__section-title">My Classes</div>
           {courses.map((c) => (
             <button key={c.id} className="sidebar__course-item" onClick={() => openCourse(c)}>
-              <span className="sidebar__course-dot" style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].accent }} />
+              <span className="sidebar__course-dot" style={{ background: c.color || '#667eea' }} />
               <div className="sidebar__course-info">
-                <span className="sidebar__course-code">{c.code}</span>
-                <span className="sidebar__course-name">{c.name}</span>
+                <span className="sidebar__course-code">{c.className}</span>
+                <span className="sidebar__course-name">{c.className}</span>
               </div>
               {c.upcoming > 0 && <span className="sidebar__course-badge">{c.upcoming}</span>}
             </button>

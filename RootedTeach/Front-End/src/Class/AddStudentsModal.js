@@ -3,16 +3,40 @@
 import React, { useState } from 'react';
 import './ClassPageModal.css';
 
-const AddStudentsModal = ({ isOpen, onClose }) => {
+const AddStudentsModal = ({ isOpen, onClose, classId }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: handle saving student
-    console.log('Student added:', { name, email });
+    try {
+      // search for Students via email
+      const searchRes = await fetch(`http://localhost:5001/api/auth/user?email=${email}`);
+      const userData = await searchRes.json();
+  
+      if (!userData._id) {
+        alert('Student not found. Please check the email.');
+        return;
+      }
+  
+      // add class
+      const res = await fetch(`http://localhost:5001/api/classes/${classId}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: userData._id }),
+      });
+  
+      if (res.ok) {
+        alert('Student added successfully!');
+      } else {
+        const data = await res.json();
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error('Failed to add student:', err);
+    }
     setName('');
     setEmail('');
     onClose();

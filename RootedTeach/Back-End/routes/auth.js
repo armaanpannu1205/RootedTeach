@@ -140,4 +140,20 @@ router.post('/google', async (req, res) => {
   }
 });
 
+router.get('/user', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const snapshot = await db.collection('users').where('email', '==', email).get();
+    if (snapshot.empty) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userDoc = snapshot.docs[0];
+    const user = userDoc.data();
+    res.json({ _id: userDoc.id, username: user.username, email: user.email, role: user.role });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;
