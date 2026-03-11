@@ -8,22 +8,22 @@ const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'E
 
 const COURSE_ASSIGNMENTS = {
     'CS 35L': [
-      { id: 1, title: 'Assignment 1',  due: '2025-11-05 23:59', points: 100, type: 'Submit the file', status: 'submitted', grade: 92,   feedback: 'Great work! Clean and well-structured.' },
-      { id: 2, title: 'Assignment 2',  due: '2025-11-19 23:59', points: 100, type: 'Submit the file', status: 'submitted', grade: 88,   feedback: 'Good effort. Minor edge-case issues.' },
-      { id: 3, title: 'Assignment 3',  due: '2025-11-28 23:59', points: 100, type: 'Submit the file', status: 'pending',   grade: null, feedback: null },
-      { id: 4, title: 'Quiz 1',        due: '2025-11-10 14:00', points: 50,  type: 'Online Test',     status: 'submitted', grade: 45,   feedback: 'Well done.' },
-      { id: 5, title: 'Final Project', due: '2025-12-20 23:59', points: 200, type: 'Submit the file', status: 'pending',   grade: null, feedback: null },
+      { id: 101, title: 'Assignment 1',  due: '2025-11-05 23:59', points: 100, type: 'Submit the file', status: 'submitted', grade: 92 },
+      { id: 102, title: 'Assignment 2',  due: '2025-11-19 23:59', points: 100, type: 'Submit the file', status: 'submitted', grade: 88 },
+      { id: 103, title: 'Assignment 3',  due: '2025-11-28 23:59', points: 100, type: 'Submit the file', status: 'pending',   grade: null },
+      { id: 104, title: 'Quiz 1',        due: '2025-11-10 14:00', points: 50,  type: 'Online Test',     status: 'submitted', grade: null },
+      { id: 105, title: 'Final Project', due: '2025-12-20 23:59', points: 200, type: 'Submit the file', status: 'pending',   grade: null },
     ],
     'MATH 161': [
-      { id: 1, title: 'HW 1',       due: '2025-11-01 23:59', points: 50,  type: 'Submit the file', status: 'submitted', grade: 47,   feedback: 'Excellent.' },
-      { id: 2, title: 'HW 2',       due: '2025-11-08 23:59', points: 50,  type: 'Submit the file', status: 'submitted', grade: 43,   feedback: 'Good work.' },
-      { id: 3, title: 'HW 3',       due: '2025-11-15 23:59', points: 50,  type: 'Submit the file', status: 'pending',   grade: null, feedback: null },
-      { id: 4, title: 'Midterm',    due: '2025-11-25 10:00', points: 150, type: 'Online Test',     status: 'pending',   grade: null, feedback: null },
-      { id: 5, title: 'Final Exam', due: '2025-12-10 10:00', points: 200, type: 'Online Test',     status: 'pending',   grade: null, feedback: null },
+      { id: 201, title: 'HW 1',         due: '2025-11-01 23:59', points: 50,  type: 'Submit the file', status: 'submitted', grade: 48  },
+      { id: 202, title: 'HW 2',         due: '2025-11-08 23:59', points: 50,  type: 'Submit the file', status: 'submitted', grade: 45  },
+      { id: 203, title: 'HW 3',         due: '2025-11-15 23:59', points: 50,  type: 'Submit the file', status: 'pending',   grade: null },
+      { id: 204, title: 'Midterm Exam', due: '2025-11-25 10:00', points: 150, type: 'Online Test',     status: 'pending',   grade: null },
+      { id: 205, title: 'Final Exam',   due: '2025-12-10 10:00', points: 200, type: 'Online Test',     status: 'pending',   grade: null },
     ],
     'CS 180': [
-      { id: 1, title: 'HW 1',               due: '2025-11-03 23:59', points: 80,  type: 'Submit the file', status: 'submitted', grade: 76,   feedback: 'Solid solution.' },
-      { id: 2, title: 'Project Checkpoint', due: '2025-11-20 23:59', points: 100, type: 'Submit the file', status: 'pending',   grade: null, feedback: null },
+      { id: 301, title: 'HW 1',               due: '2025-11-03 23:59', points: 80,  type: 'Submit the file', status: 'submitted', grade: 76  },
+      { id: 302, title: 'Project Checkpoint', due: '2025-11-20 23:59', points: 100, type: 'Submit the file', status: 'pending',   grade: null },
     ],
   };
 
@@ -62,10 +62,28 @@ const GRADES = [
 ];
 
 const ANNOUNCEMENTS = [
-  { date: '2025.11.20', title: 'Midterm Grade', body: 'Midterm grades have been posted. Please check your score on the Grades page.' },
-  { date: '2025.11.15', title: 'Extention: Due date of Assignment 2', body: 'The due date for Assignment 2 has been extended to November 19 at 11:59 PM.' },
-  { date: '2025.11.10', title: 'Office Hours', body: 'Office hours this week will be held on Monday 1:00–3:00 PM in Boelter 4428.' },
-];
+    {
+      id: 1,
+      date: '2025.11.20',
+      title: 'Midterm Grade',
+      preview: 'Midterm grades have been released.',
+      body: `Midterm grades have been released on the portal. The class average was 84/100.\n\nIf you have any questions about your grade or want to request a regrade, please come to office hours by November 27th.\n\nGreat work this quarter — keep it up for the final!`,
+    },
+    {
+      id: 2,
+      date: '2025.11.15',
+      title: 'Extension: Assignment 2 due date',
+      preview: 'Due date extended to November 22.',
+      body: `Due to several requests, the due date for Assignment 2 has been extended to November 22nd at 11:59 PM.\n\nNo further extensions will be granted. Please make sure to submit on time.\n\nIf you have already submitted, you may resubmit until the new deadline.`,
+    },
+    {
+      id: 3,
+      date: '2025.11.10',
+      title: 'Office Hours',
+      preview: 'Office hours schedule updated for the rest of the quarter.',
+      body: `Office hours have been updated for the remainder of the quarter:\n\n• Monday: 1:00 PM – 3:00 PM (Boelter 3531)\n• Wednesday: 2:00 PM – 4:00 PM (Zoom, link on CCLE)\n\nFeel free to drop in with any questions about lectures, assignments, or the upcoming project.`,
+    },
+  ];
 
 function CourseDashboard() {
   const navigate = useNavigate();
@@ -75,6 +93,9 @@ function CourseDashboard() {
   })();
 
   const [page, setPage] = useState('syllabus');
+  const [selectedAnnounce, setSelectedAnnounce] = useState(null);
+  const courseAssignments = COURSE_ASSIGNMENTS[course.code] || [];
+
 
 useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -121,7 +142,8 @@ function letterGrade(pct) {
 
 return (
     <div className="app-layout">
-    <Sidebar course={course} activePage={page} onPageChange={setPage} />
+    <Sidebar course={course} activePage={page}
+        onPageChange={(p) => { setPage(p); setSelectedAnnounce(null); }} />
 
       <div className="main">
         
@@ -200,18 +222,14 @@ return (
                   </tr>
                 </thead>
                 <tbody>
-                  {gradeRows.map((g) => (
-                    <tr
-                        key={g.name}
-                        className="grade-table__row--clickable"
-                        onClick={() => openAssignment(g.raw)}
-                        title={`Open ${g.name}`}
-                    >
+                  {GRADES.map((g) => (
+                    <tr key={g.name}>
                     <td style={{ fontWeight: 500 }}>{g.name}</td>
                     <td style={{ color: 'var(--muted)' }}>{g.type}</td>
-                    <td>{g.score !== null ? `${g.score} / ${g.max}` : '—'}</td>
+                    <td> {g.weight}</td>
+                    <td>{g.score !== '-' ? `${g.score} / ${g.max}` : '—'}</td>
                     <td>
-                      {g.status === 'graded'
+                      {g.status === '-'
                         ? <span className="grade-pill done">Graded</span>
                         : <span className="grade-pill pending">Pending</span>}
                     </td>
@@ -226,63 +244,79 @@ return (
 
         {page === 'announce' && (
           <>
-            <div className="page-header">
-              <h1>📢 Announcements</h1>
-              <p>{ANNOUNCEMENTS.length} announcements</p>
-            </div>
-            <div className="section-card">
-              {ANNOUNCEMENTS.map((a) => (
-                <div className="announce-item" key={a.title}>
-                  <div className="announce-date">{a.date}</div>
-                  <div className="announce-title">{a.title}</div>
-                  <div className="announce-body">{a.body}</div>
+            {selectedAnnounce ? (
+              <>
+                <div className="page-header" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <button className="account-back-btn" onClick={() => setSelectedAnnounce(null)}>←</button>
+                  <div>
+                    <h1>📢 {selectedAnnounce.title}</h1>
+                    <p>{selectedAnnounce.date}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
+                <div className="section-card announce-detail-card">
+                  <p style={{ whiteSpace: 'pre-line', lineHeight: 1.75, color: 'var(--text-primary)' }}>
+                    {selectedAnnounce.body}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="page-header"><h1>📢 Announcements</h1><p>Announcements</p></div>
+                <div className="section-card">
+                  {ANNOUNCEMENTS.map((a) => (
+                    /* FIX 3: each announcement is clickable */
+                    <div
+                      className="announce-item announce-item--clickable"
+                      key={a.id}
+                      onClick={() => setSelectedAnnounce(a)}
+                    >
+                      <div className="announce-date">{a.date}</div>
+                      <div className="announce-title">{a.title}</div>
+                      <div className="announce-body">{a.preview}</div>
+                      <span className="announce-arrow">›</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 
         {page === 'assignments' && (
           <>
-            <div className="page-header">
-              <h1>📝 Assignments</h1>
-              <p>{assignments.length} assignments · {submittedCount} submitted</p>
-            </div>
-            <div className="assignment-tiles">
-              {assignments.map((a) => {
-                const daysLeft = getDaysLeft(a.due);
-                const urgency = 
-                    daysLeft === 'closed' ? 'danger' : 
-                    daysLeft === 'Due today' ? 'warning' : '';
-                return (
-                  <div className={`assignment-tile ${a.status}`}
-                    key={a.id} 
-                    onClick={() => openAssignment(a)}>
+            <div className="page-header"><h1>📝 Assignments</h1><p>{courseAssignments.length} assignments</p></div>
+            <div className="section-card">
+              {courseAssignments.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px', color: 'var(--muted)' }}>No assignments yet.</div>
+              ) : (
+                courseAssignments.map((a) => (
+                  <div
+                    className="assignment-tile"
+                    key={a.id}
+                    onClick={() => openAssignment(a)}
+                  >
                     <div className="tile-left">
                       <div className="tile-icon">{a.type === 'Online Test' ? '📋' : '📄'}</div>
-                    </div>
-                    <div className="tile-body">
-                      <div className="tile-title">{a.title}</div>
-                      <div className="tile-meta">
-                        <span>📅 {a.due.split(' ')[0]}</span>
-                        <span>🏆 {a.points}pts</span>
-                        <span>{a.type}</span>
+                      <div>
+                        <div className="tile-title">{a.title}</div>
+                        <div className="tile-meta">
+                          <span>📅 {a.due.split(' ')[0]}</span>
+                          <span>🏆 {a.points}pts</span>
+                          <span>{a.type}</span>
+                        </div>
                       </div>
                     </div>
                     <div className="tile-right">
                       <span className={`status-pill ${a.status}`}>
-                        {a.status === 'submitted' ? '✅ Submitted' : '⏳ Not submitted'}
+                        {a.status === 'submitted' ? '✅ Submitted' : '⏳ Pending'}
                       </span>
-                      {a.status === 'submitted' && a.grade !== null && (
-                        <span className="tile-grade">{a.grade} / {a.points}</span>
-                      )}
-                      {a.status === 'pending' && daysLeft && (
-                        <span className={`days-left ${urgency}`}>⏰ {daysLeft}</span>
+                      {a.grade !== null && (
+                        <span className="tile-grade">{a.grade}/{a.points}</span>
                       )}
                     </div>
                   </div>
-                );
-              })}
+                ))
+              )}
             </div>
           </>
         )}
@@ -291,4 +325,5 @@ return (
     </div>
   );
 }
+
 export default CourseDashboard;

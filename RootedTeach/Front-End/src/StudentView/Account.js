@@ -10,23 +10,18 @@ const DEFAULT_USER = {
   studentId: '123456789',
   major: 'Computer Science',
   year: '3rd Year',
-  avatar: '🎓',
 };
 
 function Account() {
   const navigate = useNavigate();
   const [courses] = useState(() => {
-    try {
-      const saved = localStorage.getItem('courses');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
+    try { return JSON.parse(localStorage.getItem('courses')) || []; }
+    catch { return []; }
   });
 
   const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('userProfile');
-      return saved ? JSON.parse(saved) : DEFAULT_USER;
-    } catch { return DEFAULT_USER; }
+    try { return JSON.parse(localStorage.getItem('userProfile')) || DEFAULT_USER; }
+    catch { return DEFAULT_USER; }
   });
 
   const [editing, setEditing] = useState(false);
@@ -34,8 +29,9 @@ function Account() {
   const [toast, setToast]     = useState('');
 
   function saveProfile() {
-    setUser(draft);
-    localStorage.setItem('userProfile', JSON.stringify(draft));
+    const saved = { ...draft, studentId: user.studentId };
+    setUser(saved);
+    localStorage.setItem('userProfile', JSON.stringify(saved));
     setEditing(false);
     setToast('Profile updated!');
     setTimeout(() => setToast(''), 3000);
@@ -73,13 +69,13 @@ function Account() {
 
             <div className="account-grid">
             {[
-                { label: 'Student ID',       value: user.studentId },
+                { label: 'Student ID',       value: user.studentId, locked: true },
                 { label: 'Major',             value: user.major     },
                 { label: 'Year',              value: user.year      },
                 { label: 'Enrolled courses',  value: courses.length },
-            ].map(({ label, value }) => (
+            ].map(({ label, value, locked }) => (
                 <div className="account-field" key={label}>
-                <label>{label}</label>
+                <label>{label}{locked && <span className ="account-locked-badge">🔒</span>}</label>
                 <span>{value}</span>
                 </div>
             ))}
@@ -97,26 +93,26 @@ function Account() {
         ) : (
         <>
             <div className="account-edit-form">
-            {[
-                { label: 'Name',       key: 'name'      },
-                { label: 'Email',      key: 'email'     },
-                { label: 'Student ID', key: 'studentId' },
-                { label: 'Major',      key: 'major'     },
-                { label: 'Year',       key: 'year'      },
-            ].map(({ label, key }) => (
-                <div className="account-edit-field" key={key}>
-                <label>{label}</label>
-                <input
-                    value={draft[key]}
-                    onChange={e => setDraft({ ...draft, [key]: e.target.value })}
-                />
+                <div className="account-edit-field">
+                  <label>Student ID <span className="account-locked-badge">🔒</span></label>
+                  <input value={user.studentId} disabled className="account-input--locked" />
                 </div>
-            ))}
-            </div>
-            <div className="account-actions">
-            <button className="account-btn-edit" onClick={saveProfile}>💾 Save</button>
-            <button className="account-btn-cancel" onClick={() => setEditing(false)}>Cancel</button>
-            </div>
+                {[
+                  { label: 'Name',  key: 'name'  },
+                  { label: 'Email', key: 'email' },
+                  { label: 'Major', key: 'major' },
+                  { label: 'Year',  key: 'year'  },
+                ].map(({ label, key }) => (
+                  <div className="account-edit-field" key={key}>
+                    <label>{label}</label>
+                    <input value={draft[key]} onChange={e => setDraft({ ...draft, [key]: e.target.value })} />
+                  </div>
+                ))}
+              </div>
+              <div className="account-actions">
+                <button className="account-btn-edit" onClick={saveProfile}>💾 Save</button>
+                <button className="account-btn-cancel" onClick={() => setEditing(false)}>Cancel</button>
+              </div>
         </>
         )}
     </div>

@@ -1,66 +1,29 @@
-/* ═══════════════════════════════════════════════════════════
-   Profile popup — appears ABOVE the Profile button
-   White card with shadow, clean layout
-   ═══════════════════════════════════════════════════════════ */
-   .sidebar__footer {
-    position: relative;
+.sidebar--dashboard .sidebar__back {
+    display: none !important;
+  }
+  
+  .sidebar__footer-wrap {
     margin-top: auto;
-    padding: 8px 0;
-  }
-  
-  .sidebar__profile-popup {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 12px;
-    right: 12px;
-  
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.10);
-    overflow: hidden;
-    z-index: 300;
-  
-    animation: popupUp 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  
-  @keyframes popupUp {
-    from { opacity: 0; transform: translateY(8px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)   scale(1);    }
-  }
-  
-  .sidebar__profile-item {
+    padding: 8px 0 4px;
     display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 13px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-    color: #1a1a2e;
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.14s;
+    flex-direction: column;
   }
   
-  .sidebar__profile-item:hover {
-    background: #f4f1eb;
+  .sidebar__nav-item--logout {
+    /* inherits all sidebar__nav-item styles */
+    /* subtle danger tint on hover only */
+  }
+  .sidebar__nav-item--logout:hover {
+    color: #ff9a9a !important;
+    background: rgba(224, 95, 95, 0.12) !important;
   }
   
-  .sidebar__profile-divider {
-    margin: 0 14px;
-    border: none;
-    border-top: 1px solid rgba(26, 26, 46, 0.08);
-  }
-  
-  .sidebar__profile-item--danger {
-    color: #d94f4f;
-  }
-  
-  .sidebar__profile-item--danger:hover {
-    background: #fff0f0;
+  .sidebar__logo-img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
   }
   
   .account-back-btn {
@@ -78,8 +41,30 @@
     transition: background 0.16s, transform 0.14s;
     flex-shrink: 0;
   }
-  
   .account-back-btn:hover {
     background: rgba(26, 26, 46, 0.14);
     transform: translateX(-2px);
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
