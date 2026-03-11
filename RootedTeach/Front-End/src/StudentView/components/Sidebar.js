@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 
@@ -13,22 +13,27 @@ export const COURSE_COLORS = [
   { gradient: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)', accent: '#ff9a9e' },
 ];
 
-function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPageChange }) {
+function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPageChange, logoSrc = null }) {
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
-  const isCourseMode = course !== null && course !== undefined;
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const profileRef = useRef(null);
+  const [collapsed, setCollapsed]         = useState(false);
+  //const [showLogout, setShowLogout]        = useState(false); // FIX 1: inline logout toggle
+  //const profileRef                         = useRef(null);
 
+  // isCourseMode = true  → CourseDashboard, AssignmentDashboard  (← back button shown)
+  // isCourseMode = false → everything else                        (NO back button, EVER)
+  const isCourseMode = course !== null && course !== undefined;
+
+  /*
   useEffect(() => {
-    function handleOutsideClick(e) {
+    function handleOutside(e) {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setShowProfileMenu(false);
+        setShowLogout(false);
       }
     }
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
+  */
 
   function openCourse(c) {
     localStorage.setItem('currentCourse', JSON.stringify(c));
@@ -40,22 +45,28 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
     navigate('/');
   }
 
-  function ProfilePopup() {
-    if (!showProfileMenu) return null;
+  // ── Logo: use real image if provided, else emoji fallback ──
+  function LogoImg() {
+    if (logoSrc) return <img src={logoSrc} alt="logo" className="sidebar__logo-img" />;
+    return <span className="sidebar__logo">🌱</span>;
+  }
+
+  function SidebarFooter({ showLabel }) {
     return (
-      <div className="sidebar__profile-popup">
+      <div className="sidebar__footer-fixed">
         <button
-          className="sidebar__profile-item"
-          onClick={() => { setShowProfileMenu(false); navigate('/account'); }}
+          className={`sidebar__nav-item ${activePage === 'account' ? 'active' : ''}`}
+          onClick={() => navigate('/account')}
         >
-          <span>🪪</span> Account
+          <span className="sidebar__nav-icon">👤</span>
+          {showLabel && <span className="sidebar__nav-label">Profile</span>}
         </button>
-        <hr className="sidebar__profile-divider" />
         <button
-          className="sidebar__profile-item sidebar__profile-item--danger"
+          className="sidebar__nav-item sidebar__nav-item--logout"
           onClick={handleLogout}
         >
-          <span>🚪</span> Log out
+          <span className="sidebar__nav-icon">🚪</span>
+          {showLabel && <span className="sidebar__nav-label">Log out</span>}
         </button>
       </div>
     );
@@ -63,13 +74,11 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
 
   if (isCourseMode) {
     return (
-      <aside className="sidebar">
+      <aside className="sidebar sidebar--course">
         <div className="sidebar__header">
-        <button className="sidebar__back" 
-                onClick={() => navigate('/dashboard')}
-                title="Back to Dashboard">
+          <button className="sidebar__back" onClick={() => navigate(-1)} title="Go back to the previous page">
             ←
-        </button>
+          </button>
           <div className="sidebar__course-header">
             <div className="sidebar__course-code-label">{course.code}</div>
             <div className="sidebar__course-name-label">{course.name}</div>
@@ -78,10 +87,10 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
 
         <nav className="sidebar__nav">
           {[
-            { key: 'syllabus', icon: '📋', label: 'Syllabus' },
-            { key: 'grade',    icon: '📊', label: 'Grades' },
-            { key: 'announce', icon: '📢', label: 'Announcements' },
-            { key: 'assignments', icon: '📝', label: 'Assignments'},
+            { key: 'syllabus',    icon: '📋', label: 'Syllabus'       },
+            { key: 'grade',       icon: '📊', label: 'Grades'         },
+            { key: 'announce',    icon: '📢', label: 'Announcements'  },
+            { key: 'assignments', icon: '📝', label: 'Assignments'    },
           ].map(({ key, icon, label }) => (
             <button
               key={key}
@@ -94,49 +103,27 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
           ))}
         </nav>
 
-        <div className="sidebar__footer" style={{ position: 'relative' }}>
-          <button
-            className="sidebar__nav-item"
-            onClick={() => setShowProfileMenu(v => !v)}
-          >
-            <span className="sidebar__nav-icon">👤</span>
-            <span className="sidebar__nav-label">Profile</span>
-          </button>
-          {showProfileMenu && (
-            <div className="sidebar__profile-menu">
-              <button className="sidebar__profile-item" onClick={() => navigate('/account')}>
-                <span>🪪</span> Account
-              </button>
-              <button className="sidebar__profile-item sidebar__profile-item--danger" onClick={handleLogout}>
-                <span>🚪</span> Log out
-              </button>
-            </div>
-          )}
-        </div>
+        <SidebarFooter showLabel />
       </aside>
     );
   }
 
   return (
-    <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
-      <div className="sidebar__header">
-        {!collapsed && (
-          <div className="sidebar__brand">
-            <span className="sidebar__logo">🌱</span>
-            <span className="sidebar__brand-name">RootedTeach</span>
-          </div>
-        )}
-        <button className="sidebar__toggle" onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? '→' : '←'}
-        </button>
+    <aside className="sidebar sidebar--dashboard">
+      {/* FIX 1: plain brand header — zero buttons */}
+      <div className="sidebar__header sidebar__header--brand-only">
+        <div className="sidebar__brand">
+          <LogoImg />
+          <span className="sidebar__brand-name">RootedTeach</span>
+        </div>
       </div>
 
       <nav className="sidebar__nav">
         {[
-          { key: 'dashboard',   path: '/dashboard',   icon: '🏠', label: 'Dashboard' },
-          { key: 'calendar',    path: '/calendar',    icon: '📅', label: 'Calendar' },
+          { key: 'dashboard',   path: '/dashboard',   icon: '🏠', label: 'Dashboard'   },
+          { key: 'calendar',    path: '/calendar',    icon: '📅', label: 'Calendar'    },
           { key: 'assignments', path: '/assignments', icon: '📝', label: 'Assignments' },
-          { key: 'grades',      path: '/grades',      icon: '📊', label: 'Grades' },
+          { key: 'grades',      path: '/grades',      icon: '📊', label: 'Grades'      },
         ].map(({ key, path, icon, label }) => (
           <button
             key={key}
@@ -144,54 +131,34 @@ function Sidebar({ courses = [], course = null, activePage = 'dashboard', onPage
             onClick={() => navigate(path)}
           >
             <span className="sidebar__nav-icon">{icon}</span>
-            {!collapsed && <span className="sidebar__nav-label">{label}</span>}
+            <span className="sidebar__nav-label">{label}</span>
           </button>
         ))}
       </nav>
-      
-      {!collapsed && courses.length > 0 && (
+
+      {courses.length > 0 && (
         <div className="sidebar__courses">
           <div className="sidebar__section-title">My Classes</div>
           {courses.map((c) => (
             <button key={c.id} className="sidebar__course-item" onClick={() => openCourse(c)}>
-              <span className="sidebar__course-dot" 
-                    style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].accent }} />
+              <span
+                className="sidebar__course-dot"
+                style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].accent }}
+              />
               <div className="sidebar__course-info">
                 <span className="sidebar__course-code">{c.className}</span>
                 <span className="sidebar__course-name">{c.className}</span>
               </div>
-              {c.upcoming > 0 &&  (
-                <span className="sidebar__course-badge">{c.upcoming}</span>
-              )}
+              {c.upcoming > 0 && <span className="sidebar__course-badge">{c.upcoming}</span>}
             </button>
           ))}
         </div>
       )}
-      
-      <div className="sidebar__footer" style={{ position: 'relative' }}>
-        <button
-          className="sidebar__nav-item"
-          onClick={() => setShowProfileMenu(v => !v)}
-        >
-          <span className="sidebar__nav-icon">👤</span>
-          {!collapsed && <span className="sidebar__nav-label">Profile</span>}
-        </button>
-        {showProfileMenu && (
-          <div className="sidebar__profile-menu">
-            <button className="sidebar__profile-item" onClick={() => navigate('/account')}>
-              <span>🪪</span> Account
-            </button>
-            <button
-              className="sidebar__profile-item sidebar__profile-item--danger"
-              onClick={handleLogout}
-            >
-              <span>🚪</span> Log out
-            </button>
-          </div>
-        )}
-      </div>
+
+      <SidebarFooter showLabel />
     </aside>
   );
 }
+
 
 export default Sidebar;

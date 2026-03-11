@@ -87,6 +87,8 @@ function App() {
 
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/course" element={<CourseDashboard />} />
+        <Route path="/assignments" element={<AllAssignment />} />
+        <Route path="/calendar" element={<Calendar />} />
         <Route path="/assignment" element={<AssignmentDashboard />} />
         <Route path="/assignments" element={<AllAssignment />} />
         <Route path="/calendar" element={<Calendar />} />
@@ -96,7 +98,10 @@ function App() {
         {/* Fix later */}
         <Route path="/class" element={<TCourseDashboard />} />
         <Route path="/class" element={<ClassPage />} />
-        
+        <Route path="/grades" element={<AllGrades />} />
+        <Route path="/account" element={<Account />} />
+
+
       </Routes>
     </div>
   );

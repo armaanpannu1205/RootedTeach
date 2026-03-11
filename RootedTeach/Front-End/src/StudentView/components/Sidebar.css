@@ -376,3 +376,51 @@
     display: none;
   }
 }
+
+.sidebar--dashboard .sidebar__back {
+    display: none !important;
+  }
+  
+  .sidebar__footer-wrap {
+    margin-top: auto;
+    padding: 8px 0 4px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar__nav-item--logout {
+    /* inherits all sidebar__nav-item styles */
+    /* subtle danger tint on hover only */
+  }
+  .sidebar__nav-item--logout:hover {
+    color: #ff9a9a !important;
+    background: rgba(224, 95, 95, 0.12) !important;
+  }
+  
+  .sidebar__logo-img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  
+  .account-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(26, 26, 46, 0.07);
+    border: none;
+    font-size: 18px;
+    color: #1a1a2e;
+    cursor: pointer;
+    transition: background 0.16s, transform 0.14s;
+    flex-shrink: 0;
+  }
+  .account-back-btn:hover {
+    background: rgba(26, 26, 46, 0.14);
+    transform: translateX(-2px);
+  }
