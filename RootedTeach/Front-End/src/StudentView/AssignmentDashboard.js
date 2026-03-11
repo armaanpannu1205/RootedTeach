@@ -6,62 +6,11 @@ import './AssignmentDashboard.css';
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };
 
 const INITIAL_ASSIGNMENTS = [
-  {
-    id: 1,
-    title: 'Assignment 1',
-    due: '2025-11-05 23:59',
-    points: 100,
-    type: 'Submit the file',
-    status: 'submitted',
-    desc: 'Description',
-    requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
-    submittedFile: 'assignment1_NAME.py',
-    submittedAt: '2025-11-04 20:31',
-  },
-  {
-    id: 2,
-    title: 'Assignment 2',
-    due: '2025-11-19 23:59',
-    points: 100,
-    type: 'Submit the file',
-    status: 'submitted',
-    desc: 'Description',
-    requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
-    submittedFile: 'assignment2_NAME.py',
-    submittedAt: '2025-11-18 15:44',
-  },
-  {
-    id: 3,
-    title: 'Assignment 3',
-    due: '2025-11-28 23:59',
-    points: 100,
-    type: 'Submit the file',
-    status: 'pending',
-    desc: 'Description',
-    requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
-  },
-  {
-    id: 4,
-    title: 'Quiz 1',
-    due: '2025-11-10 14:00',
-    points: 50,
-    type: 'Online Test',
-    status: 'submitted',
-    desc: 'Description',
-    requirements: 'Time Limit: 60분, Open Book',
-    submittedFile: 'Submitted',
-    submittedAt: '2025-11-10 13:55',
-  },
-  {
-    id: 5,
-    title: 'Final Project',
-    due: '2025-12-20 23:59',
-    points: 200,
-    type: 'Submit the file',
-    status: 'pending',
-    desc: 'Description',
-    requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4',
-  },
+  { id: 1, title: 'Assignment 1', due: '2025-11-05 23:59', points: 100, type: 'Submit the file', status: 'submitted', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3', submittedFile: 'assignment1_NAME.py', submittedAt: '2025-11-04 20:31' },
+  { id: 2, title: 'Assignment 2', due: '2025-11-19 23:59', points: 100, type: 'Submit the file', status: 'submitted', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3', submittedFile: 'assignment2_NAME.py', submittedAt: '2025-11-18 15:44' },
+  { id: 3, title: 'Assignment 3', due: '2025-11-28 23:59', points: 100, type: 'Submit the file', status: 'pending', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3' },
+  { id: 4, title: 'Quiz 1', due: '2025-11-10 14:00', points: 50, type: 'Online Test', status: 'submitted', desc: 'Description', requirements: 'Time Limit: 60min, Open Book', submittedFile: 'Submitted', submittedAt: '2025-11-10 13:55' },
+  { id: 5, title: 'Final Project', due: '2025-12-20 23:59', points: 200, type: 'Submit the file', status: 'pending', desc: 'Description', requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4' },
 ];
 
 function getDaysLeft(due) {
@@ -69,7 +18,7 @@ function getDaysLeft(due) {
   const days = Math.ceil(d / 86400000);
   if (days < 0) return 'closed';
   if (days === 0) return 'Due today';
-  return `${days}day left`;
+  return `${days} day left`;
 }
 
 function AssignmentDashboard() {
@@ -85,6 +34,8 @@ function AssignmentDashboard() {
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState('');
   const [toast, setToast] = useState('');
+  const [aiResult, setAiResult] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const filtered = assignments.filter((a) => {
     if (filter === 'pending') return a.status === 'pending';
@@ -92,65 +43,81 @@ function AssignmentDashboard() {
     return true;
   });
 
-  const sel = assignments.find((a) => a.id === selectedId) || null;
+  const currentSel = assignments.find((a) => a.id === selectedId) || null;
 
   function handleFileChange(e) {
-    if (e.target.files[0]) setFile(e.target.files[0]);
+    if (e.target.files[0]) {
+      setFile(e.target.files[0]);
+      setAiResult(null);
+    }
   }
 
-  function handleSubmit() {
-    if (!file && sel.type === 'Submit the file') {
-      alert('Select the file');
+  async function handleSubmit() {
+    if (!file && currentSel.type === 'Submit the file') {
+      alert('Select a file');
       return;
     }
-    const now = new Date().toLocaleString('ko-KR');
-    setAssignments((prev) =>
-      prev.map((a) =>
-        a.id === sel.id
-          ? { ...a, status: 'submitted', submittedFile: file ? file.name : 'Submitted', submittedAt: now }
+
+    setAnalyzing(true);
+    setAiResult(null);
+
+    try {
+      // read file as text
+      const code = await file.text();
+
+      // call ML API directly
+      const res = await fetch('http://localhost:3001/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await res.json();
+
+      if (data.score !== undefined) {
+        setAiResult({ score: data.score, label: data.label });
+      }
+
+    } catch (err) {
+      console.warn('ML API unavailable, skipping AI detection:', err.message);
+    } finally {
+      setAnalyzing(false);
+    }
+
+    // update local state regardless of ML result
+    const now = new Date().toLocaleString();
+    setAssignments(prev =>
+      prev.map(a =>
+        a.id === currentSel.id
+          ? { ...a, status: 'submitted', submittedFile: file?.name || 'Submitted', submittedAt: now }
           : a
       )
     );
+
     setFile(null);
     setComment('');
-    setToast('Submitted successfully');
+    setToast('Submitted successfully!');
     setTimeout(() => setToast(''), 3000);
   }
-
-  function handlePageChange(p) {
-    if (p === 'assignments') return;
-    navigate('/course');
-  }
-
-  const currentSel = assignments.find((a) => a.id === selectedId) || null;
 
   return (
     <div className="app-layout">
       <Sidebar
         course={course}
         activePage="assignments"
-        onPageChange={(p) => {
-          if (p !== 'assignment') navigate('/course');
-        }}
+        onPageChange={(p) => { if (p !== 'assignment') navigate('/course'); }}
       />
 
       <div className="assign-main">
-        {/* Left: list */}
         <div className="assign-list-panel">
           <div className="panel-header">
             <h2>📝 Assignments</h2>
-            <p>
-              {assignments.length} assignments · {assignments.filter((a) => a.status === 'submitted').length} assignments subbmitted
-            </p>
+            <p>{assignments.length} assignments · {assignments.filter(a => a.status === 'submitted').length} submitted</p>
           </div>
           <div className="filter-tabs">
             {['all', 'pending', 'submitted'].map((f) => (
-              <button
-                key={f}
-                className={`filter-tab ${filter === f ? 'active' : ''}`}
-                onClick={() => setFilter(f)}
-              >
-                {f === 'all' ? '전체' : f === 'pending' ? '미제출' : '제출 완료'}
+              <button key={f} className={`filter-tab ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+                {f === 'all' ? 'All' : f === 'pending' ? 'Pending' : 'Submitted'}
               </button>
             ))}
           </div>
@@ -159,28 +126,19 @@ function AssignmentDashboard() {
               <div
                 key={a.id}
                 className={`assign-item ${currentSel?.id === a.id ? 'selected' : ''}`}
-                onClick={() => setSelectedId(a.id)}
+                onClick={() => { setSelectedId(a.id); setAiResult(null); }}
               >
                 <div className="assign-item-top">
                   <div className="assign-title">{a.title}</div>
                   <span className={`status-pill ${a.status}`}>
-                    {a.status === 'submitted' ? 'Submitted' : 'not submitted'}
+                    {a.status === 'submitted' ? 'Submitted' : 'Not submitted'}
                   </span>
                 </div>
                 <div className="assign-item-meta">
                   <span>📅 {a.due.split(' ')[0]}</span>
-                  <span>🏆 {a.points}점</span>
+                  <span>🏆 {a.points} pts</span>
                   {a.status === 'pending' && (
-                    <span
-                      style={{
-                        color:
-                          getDaysLeft(a.due) === 'closed'
-                            ? 'var(--danger)'
-                            : getDaysLeft(a.due) === 'Due today'
-                            ? 'var(--warning)'
-                            : 'var(--muted)',
-                      }}
-                    >
+                    <span style={{ color: getDaysLeft(a.due) === 'closed' ? 'var(--danger)' : getDaysLeft(a.due) === 'Due today' ? 'var(--warning)' : 'var(--muted)' }}>
                       ⏰ {getDaysLeft(a.due)}
                     </span>
                   )}
@@ -190,15 +148,12 @@ function AssignmentDashboard() {
           </div>
         </div>
 
-        {/* Right: detail */}
         <div className="assign-detail-panel">
           {!currentSel ? (
             <div className="empty-detail">
               <div style={{ fontSize: '3rem' }}>📄</div>
-              <div style={{ fontSize: '1rem', fontWeight: 600 }}>과제를 선택하세요</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                If you cleck the assignment, you can see the details
-              </div>
+              <div style={{ fontSize: '1rem', fontWeight: 600 }}>Select an assignment</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Click an assignment to see details</div>
             </div>
           ) : (
             <>
@@ -211,20 +166,10 @@ function AssignmentDashboard() {
 
               <div className="detail-meta">
                 <div className="meta-chip">📅 Due <b>{currentSel.due}</b></div>
-                <div className="meta-chip">🏆 Grade <b>{currentSel.points}</b></div>
+                <div className="meta-chip">🏆 Points <b>{currentSel.points}</b></div>
                 <div className="meta-chip">📎 Type <b>{currentSel.type}</b></div>
                 {currentSel.status === 'pending' && (
-                  <div
-                    className="meta-chip"
-                    style={{
-                      color:
-                        getDaysLeft(currentSel.due) === 'Closed'
-                          ? 'var(--danger)'
-                          : getDaysLeft(currentSel.due) === 'Due today'
-                          ? 'var(--warning)'
-                          : 'var(--muted)',
-                    }}
-                  >
+                  <div className="meta-chip" style={{ color: getDaysLeft(currentSel.due) === 'closed' ? 'var(--danger)' : getDaysLeft(currentSel.due) === 'Due today' ? 'var(--warning)' : 'var(--muted)' }}>
                     ⏰ <b>{getDaysLeft(currentSel.due)}</b>
                   </div>
                 )}
@@ -249,19 +194,18 @@ function AssignmentDashboard() {
 
                 {currentSel.status === 'submitted' && (
                   <div className="submitted-banner">
-                    ✅ <div><b>Submitted at {currentSel.submittedAt}</b> · <b>{currentSel.submittedFile}</b></div>
+                    ✅
+                    <div><b>Submitted at {currentSel.submittedAt}</b> · <b>{currentSel.submittedFile}</b></div>
                   </div>
                 )}
 
-                {currentSel.type === '파일 제출' && (
+                {currentSel.type === 'Submit the file' && (
                   <div className="file-drop">
-                    <input type="file" onChange={handleFileChange} />
+                    <input type="file" accept=".js,.py,.java,.cpp,.c,.ts,.cs,.go,.rb" onChange={handleFileChange} />
                     <div className="file-drop-icon">📂</div>
-                    <div className="file-drop-text">
-                      Drag a file or <b>click to select</b>
-                    </div>
+                    <div className="file-drop-text">Drag a file or <b>click to select</b></div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: 6 }}>
-                      PDF, ZIP, PY, JAVA, CPP 등
+                      .js .py .java .cpp .ts .cs .go .rb accepted
                     </div>
                   </div>
                 )}
@@ -269,25 +213,58 @@ function AssignmentDashboard() {
                 {file && (
                   <div className="selected-file">
                     📎 {file.name}
-                    <span style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>
-                      ({(file.size / 1024).toFixed(1)} KB)
-                    </span>
-                    <button onClick={() => setFile(null)}>✕</button>
+                    <span style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>({(file.size / 1024).toFixed(1)} KB)</span>
+                    <button onClick={() => { setFile(null); setAiResult(null); }}>✕</button>
                   </div>
                 )}
 
                 <textarea
                   className="text-area"
-                  placeholder="Comments"
+                  placeholder="Comments (optional)"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
 
+                {/* AI Detection Result */}
+                {analyzing && (
+                  <div style={{ padding: '12px 16px', background: 'rgba(26,26,46,0.05)', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    🔍 Analyzing code for AI detection...
+                  </div>
+                )}
+
+                {aiResult && (
+                  <div style={{
+                    padding: '16px 18px',
+                    borderRadius: '10px',
+                    marginBottom: '16px',
+                    background: aiResult.score >= 60 ? 'rgba(224, 95, 95, 0.1)' : 'rgba(46, 204, 139, 0.1)',
+                    border: `1px solid ${aiResult.score >= 60 ? 'rgba(224, 95, 95, 0.3)' : 'rgba(46, 204, 139, 0.3)'}`,
+                  }}>
+                    <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '4px' }}>
+                      {aiResult.score >= 60 ? '⚠️ Likely AI-written' : '✅ Likely Human-written'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                      AI Score: <b>{aiResult.score}%</b> — {aiResult.score >= 60 ? 'This submission may have been AI-generated.' : 'This submission appears to be human-written.'}
+                    </div>
+                    <div style={{ height: '8px', background: 'rgba(26,26,46,0.1)', borderRadius: '100px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${aiResult.score}%`,
+                        background: aiResult.score >= 40 ? '#e05f5f' : '#2ecc8b',
+                        borderRadius: '100px',
+                        transition: 'width 0.8s ease',
+                      }} />
+                    </div>
+                  </div>
+                )}
+
                 <button
                   className={`submit-btn ${currentSel.status === 'submitted' ? 'resubmit' : ''}`}
                   onClick={handleSubmit}
+                  disabled={analyzing}
+                  style={{ opacity: analyzing ? 0.6 : 1 }}
                 >
-                  {currentSel.status === 'submitted' ? '🔄 Resubmit' : '📤 Submit'}
+                  {analyzing ? '⏳ Analyzing...' : currentSel.status === 'submitted' ? '🔄 Resubmit' : '📤 Submit'}
                 </button>
               </div>
             </>
@@ -295,7 +272,7 @@ function AssignmentDashboard() {
         </div>
       </div>
 
-      {toast && <div className="toast"> {toast}</div>}
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }
