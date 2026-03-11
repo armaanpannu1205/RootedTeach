@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from "react";
 import Sidebar from './components/Sidebar';
 import './CourseDashboard.css';
 
@@ -26,18 +25,6 @@ const COURSE_ASSIGNMENTS = {
       { id: 302, title: 'Project Checkpoint', due: '2025-11-20 23:59', points: 100, type: 'Submit the file', status: 'pending',   grade: null },
     ],
   };
-
-  function getAssignments(courseCode) {
-    return COURSE_ASSIGNMENTS[courseCode] || COURSE_ASSIGNMENTS['CS 35L'];
-  }
-  
-  function getDaysLeft(due) {
-    const d = new Date(due) - new Date();
-    const days = Math.ceil(d / 86400000);
-    if (days < 0) return 'closed';
-    if (days === 0) return 'Due today';
-    return `${days} days left`;
-  }
 
 const SYLLABUS_WEEKS = [
   { week: 'Week 1', topic: 'Orientation' },
@@ -85,6 +72,18 @@ const ANNOUNCEMENTS = [
     },
   ];
 
+  function getAssignments(courseCode) {
+    return COURSE_ASSIGNMENTS[courseCode] || COURSE_ASSIGNMENTS['CS 35L'];
+  }
+  
+  function getDaysLeft(due) {
+    const d = new Date(due) - new Date();
+    const days = Math.ceil(d / 86400000);
+    if (days < 0) return 'closed';
+    if (days === 0) return 'Due today';
+    return `${days} days left`;
+  }
+
 function CourseDashboard() {
   const navigate = useNavigate();
   const course = (() => {
@@ -97,16 +96,12 @@ function CourseDashboard() {
   const courseAssignments = COURSE_ASSIGNMENTS[course.code] || [];
 
 
-useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-}, [page]);
 
 const assignments = getAssignments(course.code);
 const submittedCount = assignments.filter(a => a.status === 'submitted').length;
 
 function openAssignment(assignment) {
-    localStorage.setItem('selectedAssignmentId', String(assignment.id));
-    navigate('/assignment');
+    navigate('/assignment', { state: { assignmentId: assignment.id } });
 }
 
 useEffect(() => {

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import './AssignmentDashboard.css';
-import { useEffect } from "react";
 
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };
 
@@ -27,64 +26,6 @@ const ALL_COURSE_ASSIGNMENTS = {
     ],
   };
 
-/*const INITIAL_ASSIGNMENTS = [
-    { id: 1,
-     title: 'Assignment 1',
-     due: '2025-11-05 23:59',
-     points: 100,
-     type: 'Submit the file',
-     status: 'submitted',
-     desc: 'Description',
-     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
-     submittedFile: 'assignment1_NAME.py',
-     submittedAt: '2025-11-04 20:31',
-     grade: 92,
-     feddback: 'Great' },
-  
-    { id: 2,
-     title: 'Assignment 2',
-     due: '2025-11-19 23:59',
-     points: 100,
-     type: 'Submit the file',
-     status: 'submitted',
-     desc: 'Description',
-     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3',
-     submittedFile: 'assignment2_NAME.py',
-     submittedAt: '2025-11-18 15:44',
-     grade: 88,
-     feedback: 'Good' },
-  
-    { id: 3,
-     title: 'Assignment 3',
-     due: '2025-11-28 23:59',
-     points: 100,
-     type: 'Submit the file',
-     status: 'pending',
-     desc: 'Description',
-     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3' },
-  
-    { id: 4,
-     title: 'Quiz 1',
-     due: '2025-11-10 14:00',
-     points: 50,
-     type: 'Online Test',
-     status: 'submitted',
-     desc: 'Description',
-     requirements: 'Time Limit: 60min, Open Book',
-     submittedFile: 'Submitted',
-     submittedAt: '2025-11-10 13:55' },
-    
-    { id: 5,
-     title: 'Final Project',
-     due: '2025-12-20 23:59',
-     points: 200,
-     type: 'Submit the file',
-     status: 'pending',
-     desc: 'Description',
-     requirements: '1. requirement 1\n2. requirement 2\n3. requirement 3\n4. requirement 4' },
-];
-*/
-
 function getDaysLeft(due) {
   const d = new Date(due) - new Date();
   const days = Math.ceil(d / 86400000);
@@ -95,17 +36,18 @@ function getDaysLeft(due) {
 
 function AssignmentDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const course = (() => {
     try { return JSON.parse(localStorage.getItem('currentCourse')) || DEFAULT_COURSE; }
     catch { return DEFAULT_COURSE; }
   })();
 
 
-  const initialAssignments =
+  const courseAssignments =
     ALL_COURSE_ASSIGNMENTS[course.code] ||
     ALL_COURSE_ASSIGNMENTS['CS 35L'];
 
-  const [assignments, setAssignments] = useState(initialAssignments);
+  const [assignments, setAssignments] = useState(courseAssignments);
   const [filter, setFilter] = useState('all');
   const [file, setFile] = useState(null);
   const [comment, setComment] = useState('');
@@ -115,15 +57,11 @@ function AssignmentDashboard() {
   
 
   const [selectedId, setSelectedId] = useState(() => {
-    try {
-      const raw = localStorage.getItem('selectedAssignmentId');
-      if (raw) {
-        localStorage.removeItem('selectedAssignmentId');
-        const numId = parseInt(raw, 10);
-        if (!initialAssignments.find(a => a.id === numId)) return numId;
-        return initialAssignments[0]?.id ?? null;
-      }
-    } catch {}
+    const stateId = location.state?.assignmentId;
+    if (stateId != null) {
+      const numId = Number(stateId);
+      if (courseAssignments.find(a => a.id === numId)) return numId;
+    }
     return null;
   });
 
@@ -137,12 +75,7 @@ function AssignmentDashboard() {
     return true;
   });
 
-  const currentSel = assignments.find((a) => a.id === selectedId) || null;
-
-  function handleFileChange(e) {
-    if (e.target.files[0])
-      setFile(e.target.files[0]);
-  }
+  const currentSel = assignments.find((a) => a.id === selectedId) ?? null;
 
   function handleSubmit() {
     if (!file && currentSel.type === 'Submit the file') { alert('Select a file'); return; }
@@ -176,7 +109,10 @@ function AssignmentDashboard() {
 
           <div className="filter-tabs">
             {['all', 'pending', 'submitted'].map((f) => (
-              <button key={f} className={`filter-tab ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+              <button 
+                key={f}
+                className={`filter-tab ${filter === f ? 'active' : ''}`}
+                onClick={() => setFilter(f)}>
                 {f === 'all' ? 'All' : f === 'pending' ? 'Pending' : 'Submitted'}
               </button>
             ))}
