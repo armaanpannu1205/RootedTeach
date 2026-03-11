@@ -119,7 +119,7 @@ function AssignmentDashboard() {
           </div>
 
           <div className="assign-list">
-            {filtered.map((a) => (
+            {filtered.map(a => (
               <div
                 key={a.id}
                 className={`assign-item ${currentSel?.id === a.id ? 'selected' : ''}`}

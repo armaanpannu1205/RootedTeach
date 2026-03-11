@@ -61,11 +61,8 @@ function AllAssignment() {
 
   function openAssignment(a) {
     const course = COURSE_BY_ID[a.courseId];
-    if (course) {
-      localStorage.setItem('currentCourse', JSON.stringify(course));
-    }
-    localStorage.setItem('selectedAssignmentId', String(a.id));
-    navigate('/assignment');
+    if (course) localStorage.setItem('currentCourse', JSON.stringify(course));
+    navigate('/assignment', { state: { assignmentId: a.id } });
   }
 
   return (
