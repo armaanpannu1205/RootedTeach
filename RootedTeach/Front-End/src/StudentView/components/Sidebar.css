@@ -1,85 +1,378 @@
-/* ═══════════════════════════════════════════════════════════
-   Profile popup — appears ABOVE the Profile button
-   White card with shadow, clean layout
-   ═══════════════════════════════════════════════════════════ */
-   .sidebar__footer {
-    position: relative;
-    margin-top: auto;
-    padding: 8px 0;
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #f4f1eb;
+  --bg-card: #fffef9;
+  --bg-sidebar: #1a1a2e;
+  --bg-sidebar-hover: #16213e;
+  --bg-sidebar-active: #0f3460;
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #6b6880;
+  --text-muted: #a09db0;
+  --text-sidebar: #c8c5d8;
+  --text-sidebar-active: #ffffff;
+
+  --accent: #e07a5f;
+  --accent-2: #3d405b;
+
+  --radius: 16px;
+  --radius-sm: 8px;
+  --shadow-card: 0 2px 12px rgba(26, 26, 46, 0.06);
+  --shadow-hover: 0 8px 32px rgba(26, 26, 46, 0.14);
+
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 64px;
+
+  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Sidebar Base ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  transition: width var(--transition);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.sidebar--collapsed {
+  width: var(--sidebar-w-collapsed);
+}
+
+/* ── Header ── */
+.sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  min-height: 68px;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar__logo {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.sidebar__brand-name {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.sidebar__toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-sidebar);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition);
+}
+
+.sidebar__toggle:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+/* ── Course Mode Header ── */
+.sidebar__back {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.sidebar__back:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.sidebar__course-header {
+  min-width: 0;
+}
+
+.sidebar__course-code-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.sidebar__course-name-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* ── Nav ── */
+.sidebar__nav {
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-sidebar);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background var(--transition), color var(--transition);
+  font-size: 14px;
+  font-weight: 400;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.sidebar__nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+}
+
+.sidebar__nav-item.active {
+  background: var(--bg-sidebar-active);
+  color: var(--text-sidebar-active);
+  font-weight: 500;
+}
+
+.sidebar__nav-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
+.sidebar__nav-label {
+  font-size: 14px;
+}
+
+/* ── Courses List ── */
+.sidebar__courses {
+  padding: 8px 10px 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar__courses::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar__courses::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+}
+
+.sidebar__section-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 12px 8px;
+}
+
+.sidebar__course-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  width: 100%;
+  text-align: left;
+  transition: background var(--transition);
+}
+
+.sidebar__course-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.sidebar__course-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sidebar__course-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sidebar__course-code {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0ddf0;
+}
+
+.sidebar__course-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__course-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 7px;
+  flex-shrink: 0;
+}
+
+/* ── Footer ── */
+.sidebar__footer {
+  position: relative;
+  margin-top: auto;
+  padding: 10px 10px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Profile Popup ── */
+.sidebar__profile-popup {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 12px;
+  right: 12px;
+
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+  z-index: 300;
+
+  animation: popupUp 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* sidebar__profile-menu is an alias used in some branches */
+.sidebar__profile-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 12px;
+  right: 12px;
+
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+  z-index: 300;
+
+  animation: popupUp 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popupUp {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.sidebar__profile-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1a2e;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s;
+}
+
+.sidebar__profile-item:hover {
+  background: #f4f1eb;
+}
+
+.sidebar__profile-divider {
+  margin: 0 14px;
+  border: none;
+  border-top: 1px solid rgba(26, 26, 46, 0.08);
+}
+
+.sidebar__profile-item--danger {
+  color: #d94f4f;
+}
+
+.sidebar__profile-item--danger:hover {
+  background: #fff0f0;
+}
+
+/* ── Account Back Button ── */
+.account-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(26, 26, 46, 0.07);
+  border: none;
+  font-size: 18px;
+  color: #1a1a2e;
+  cursor: pointer;
+  transition: background 0.16s, transform 0.14s;
+  flex-shrink: 0;
+}
+
+.account-back-btn:hover {
+  background: rgba(26, 26, 46, 0.14);
+  transform: translateX(-2px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
   }
-  
-  .sidebar__profile-popup {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 12px;
-    right: 12px;
-  
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.10);
-    overflow: hidden;
-    z-index: 300;
-  
-    animation: popupUp 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  
-  @keyframes popupUp {
-    from { opacity: 0; transform: translateY(8px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)   scale(1);    }
-  }
-  
-  .sidebar__profile-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 13px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-    color: #1a1a2e;
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.14s;
-  }
-  
-  .sidebar__profile-item:hover {
-    background: #f4f1eb;
-  }
-  
-  .sidebar__profile-divider {
-    margin: 0 14px;
-    border: none;
-    border-top: 1px solid rgba(26, 26, 46, 0.08);
-  }
-  
-  .sidebar__profile-item--danger {
-    color: #d94f4f;
-  }
-  
-  .sidebar__profile-item--danger:hover {
-    background: #fff0f0;
-  }
-  
-  .account-back-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: rgba(26, 26, 46, 0.07);
-    border: none;
-    font-size: 18px;
-    color: #1a1a2e;
-    cursor: pointer;
-    transition: background 0.16s, transform 0.14s;
-    flex-shrink: 0;
-  }
-  
-  .account-back-btn:hover {
-    background: rgba(26, 26, 46, 0.14);
-    transform: translateX(-2px);
-  }
+}
