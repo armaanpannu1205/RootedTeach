@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import TeacherView from "../TeacherView/Teacher";
-import StudentDashboard from "../StudentView/StudentDashboard";
+import TeacherView from "../views/Teacher/Teacher";
+import StudentDashboard from "../views/Student/StudentDashboard";
 
 const DashboardRouter = () => {
   const role = localStorage.getItem("role");

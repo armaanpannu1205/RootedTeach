@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar, { COURSE_COLORS } from './components/Sidebar';
+import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
 import './StudentDashboard.css';
 import './Account.css';
 

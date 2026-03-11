@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from "react";
-import Sidebar from './components/Sidebar';
+import Sidebar from '../../components/Sidebar/Sidebar';
 import './CourseDashboard.css';
 
 const DEFAULT_COURSE = { code: 'CS 35L', name: 'Software Construction', prof: 'Eggert' };

@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
-import { Images } from "../Images/Images.js";
+import { Images } from "../../assets/Images.js";
 import PeopleIcon from "@mui/icons-material/People";
 import PhoneIcon from "@mui/icons-material/Phone";
 import ReceiptIcon from "@mui/icons-material/Receipt";
