@@ -65,10 +65,10 @@ function Sidebar({
 
         <nav className="sidebar__nav">
           {[
-            { key: 'syllabus',    icon: '📋', label: 'Syllabus'      },
-            { key: 'grade',       icon: '📊', label: 'Grades'        },
-            { key: 'announce',    icon: '📢', label: 'Announcements' },
             { key: 'assignments', icon: '📝', label: 'Assignments'   },
+            { key: 'grade',       icon: '📊', label: 'Grades'        },
+            { key: 'syllabus',    icon: '📋', label: 'Syllabus'      },
+            { key: 'search',      icon: '🔍', label: 'Search'        },
           ].map(({ key, icon, label }) => (
             <button
               key={key}
