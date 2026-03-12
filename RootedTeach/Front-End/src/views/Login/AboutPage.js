@@ -1,3 +1,6 @@
+/* AboutPage.js - Just the basic info about RootedTeach. */
+/* Explaining why we built this and what we're aiming for. */
+
 import React from "react";
 import "./AboutPage.css";
 
@@ -8,17 +11,21 @@ function AboutPage() {
 
         <div className="about-tag">Our Mission</div>
 
+        {/* Title with gradiant accent */}
         <h1 className="about-title">
           Real Learning.<br />
           <span className="about-title-accent">Not Copy-Paste.</span>
         </h1>
 
+        {/* Lead sentence */}
         <p className="about-lead">
           RootedTeach AI was built to bring integrity back to coding education.
         </p>
 
+        {/* Short Divider */}
         <div className="about-divider" />
 
+        {/* Body sentence */}
         <div className="about-body">
           <p>
             As AI tools become more powerful, students are increasingly tempted to copy and paste
@@ -36,6 +43,7 @@ function AboutPage() {
           </p>
         </div>
 
+        {/* Footer stats section */}
         <div className="about-stats">
           <div className="about-stat">
             <span className="stat-number">100%</span>

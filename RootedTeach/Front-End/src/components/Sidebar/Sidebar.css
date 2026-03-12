@@ -12,7 +12,7 @@
   --sidebar-w:         220px;
 }
 
-/* ── Base ── */
+/* Base */
 .sidebar {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
@@ -27,7 +27,7 @@
   z-index: 100;
 }
 
-/* ── Header / Logo ── */
+/* Header & Logo */
 .sidebar__header {
   display: flex;
   align-items: center;
@@ -94,7 +94,7 @@
   margin-top: 3px;
 }
 
-/* ── Nav ── */
+/* Nav */
 .sidebar__nav {
   display: flex;
   flex-direction: column;
@@ -144,7 +144,7 @@
   font-size: 14px;
 }
 
-/* ── Section label ── */
+/* Section label */
 .sidebar__section-label {
   font-size: 10px;
   font-weight: 600;
@@ -155,7 +155,7 @@
   flex-shrink: 0;
 }
 
-/* ── Class list ── */
+/* Class list */
 .sidebar__class-list {
   flex: 1;
   overflow-y: auto;
@@ -231,7 +231,7 @@
   flex-shrink: 0;
 }
 
-/* ── Footer ── */
+/* Footer */
 .sidebar__footer {
   flex-shrink: 0;
   border-top: 1px solid rgba(255,255,255,0.06);

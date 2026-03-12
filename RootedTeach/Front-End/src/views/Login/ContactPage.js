@@ -1,12 +1,21 @@
+/* ContactPage.js - Component for the contact screen. */
+/* Handles basic info display and a "click-to-copy" feature for UX. */
+
 import React, { useState } from "react";
 import "./ContactPage.css";
 
 function ContactPage() {
+  // Track which item was copied so we can show a "✓ Copied!" message
   const [copied, setCopied] = useState("");
 
   const handleCopy = (text, label) => {
+    // Copy the actual string to the user's clipboard
     navigator.clipboard.writeText(text);
+    
+    // Trigger the success message
     setCopied(label);
+    
+    // Reset the button text after 2 seconds to keep the UI clean
     setTimeout(() => setCopied(""), 2000);
   };
 
@@ -25,6 +34,7 @@ function ContactPage() {
 
         <div className="contact-cards">
 
+          {/* Email Section */}
           <div className="contact-card">
             <div className="contact-card-icon">✉</div>
             <div className="contact-card-body">
@@ -34,11 +44,13 @@ function ContactPage() {
                 className="contact-copy-btn"
                 onClick={() => handleCopy("armpbruin420723@ucla.edu", "email")}
               >
+                {/* Toggle button text based on copy state */}
                 {copied === "email" ? "✓ Copied!" : "Copy email"}
               </button>
             </div>
           </div>
 
+          {/* Phone Section */}
           <div className="contact-card">
             <div className="contact-card-icon">📞</div>
             <div className="contact-card-body">
@@ -55,6 +67,7 @@ function ContactPage() {
 
         </div>
 
+        {/* Small footer note about response time */}
         <p className="contact-note">
           We typically respond within 1–2 business days.
         </p>

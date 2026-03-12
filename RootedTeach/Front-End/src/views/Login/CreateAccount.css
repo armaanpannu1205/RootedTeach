@@ -1,8 +1,9 @@
+/* CreateAccount.css - Styling for the registration flow. */
+/* Using a similar animated glass-card feel as the Contact page. */
+
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
-/* ════════════════════════════
-   BACKGROUND
-════════════════════════════ */
+/* Main container with that moving star/space background */
 .create-account-container {
   min-height: 100vh;
   width: 100vw;
@@ -22,9 +23,7 @@
   100% { background-position: 1000px 0; }
 }
 
-/* ════════════════════════════
-   CARD
-════════════════════════════ */
+/* Glassmorphism card for the signup form */
 .create-account-card {
   width: 100%;
   max-width: 640px;
@@ -40,9 +39,7 @@
   color: white;
 }
 
-/* ════════════════════════════
-   HEADER
-════════════════════════════ */
+/* Header section with the logo and intro text */
 .create-account-header {
   display: flex;
   flex-direction: column;
@@ -51,6 +48,7 @@
   margin-bottom: 4px;
 }
 
+/* The "RT" or App icon with a nice gradient glow */
 .create-account-logo {
   width: 56px;
   height: 56px;
@@ -82,9 +80,7 @@
   margin: 0;
 }
 
-/* ════════════════════════════
-   ROLE TOGGLE
-════════════════════════════ */
+/* Role selection (Student/Teacher) toggle container */
 .role-toggle-wrapper {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -94,7 +90,7 @@
   gap: 4px;
 }
 
-/* Override MUI ToggleButton styles */
+/* Customizing MUI's default ToggleButton to fit our dark theme */
 .role-toggle-wrapper .MuiToggleButton-root {
   flex: 1;
   border: none !important;
@@ -114,15 +110,14 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Styling the active state of the toggle */
 .role-toggle-wrapper .MuiToggleButton-root.Mui-selected {
   background: linear-gradient(135deg, #4facfe 0%, #7b2fff 100%) !important;
   color: white !important;
   box-shadow: 0 2px 12px rgba(79, 172, 254, 0.3);
 }
 
-/* ════════════════════════════
-   PASSWORD STRENGTH BAR
-════════════════════════════ */
+/* Password strength feedback section */
 .strength-row {
   display: flex;
   align-items: center;
@@ -136,9 +131,7 @@
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ════════════════════════════
-   SUBMIT BUTTON OVERRIDE
-════════════════════════════ */
+/* Overriding MUI Button styles for the main CTA */
 .create-account-card .MuiButton-root {
   font-family: 'Outfit', sans-serif !important;
   font-weight: 700 !important;
@@ -146,9 +139,7 @@
   letter-spacing: 0.2px !important;
 }
 
-/* ════════════════════════════
-   FOOTER LINK
-════════════════════════════ */
+/* "Already have an account?" link at the bottom */
 .create-account-footer {
   text-align: center;
   font-size: 0.83rem;
@@ -167,9 +158,7 @@
   text-decoration: underline;
 }
 
-/* ════════════════════════════
-   RESPONSIVE
-════════════════════════════ */
+/* Make it look better on phones */
 @media (max-width: 650px) {
   .create-account-card {
     padding: 36px 24px;

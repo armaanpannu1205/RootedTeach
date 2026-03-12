@@ -1,3 +1,6 @@
+/* LoginPage.js - Handles user authentication. */
+/* Using Firebase Auth for the Google popup, then exchanging the token with our backend. */
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,8 +11,7 @@ import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { initializeApp, getApps } from "firebase/app";
 
-// Firebase is only used here to get the Google ID token from the popup
-// All actual user storage and verification happens on our Express backend
+// Firebase config using environment variables for security
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -19,10 +21,11 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-
+// Singleton pattern for Firebase app initialization
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(firebaseApp);
 
+// Common styles for the dark-themed MUI text fields
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "12px",
@@ -47,6 +50,7 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Standard Email/Password login
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -59,11 +63,14 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
+        // Persist session info to local storage
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("username", data.user.username);
         localStorage.setItem("email", email);
+        
+        // Dynamic redirect based on user role
         navigate(data.user.role === "Teacher" ? "/teacher" : "/dashboard");
       } else {
         setErrorMsg(data.message);
@@ -75,16 +82,17 @@ export default function LoginPage() {
     }
   };
 
+  // Google OAuth flow (Popup -> Backend verification)
   const handleGoogleLogin = async () => {
     setErrorMsg("");
     setGoogleLoading(true);
     try {
-      // Step 1: open Google popup and get the ID token
+      // Step 1: Get the ID token from Google popup
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      // Step 2: send the ID token to our backend to verify and get a JWT back
+      // Step 2: Verify the token on our server and get our own JWT back
       const res = await fetch("http://localhost:5001/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,7 +105,7 @@ export default function LoginPage() {
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("username", data.user.username);
-        localStorage.setItem("email", email);
+        localStorage.setItem("email", data.user.email); // Use email from response
         navigate(data.user.role === "Teacher" ? "/teacher" : "/dashboard");
       } else {
         setErrorMsg(data.message);
@@ -120,6 +128,7 @@ export default function LoginPage() {
       "@keyframes moveBg": { "0%": { backgroundPosition: "0 0" }, "100%": { backgroundPosition: "1000px 0" } },
       p: 2,
     }}>
+      {/* Semi-transparent glass card for the login form */}
       <Box component="form" onSubmit={handleLogin} sx={{
         width: "100%", maxWidth: 540,
         background: "rgba(0,1,26,0.85)", backdropFilter: "blur(16px)",
@@ -145,6 +154,7 @@ export default function LoginPage() {
           </Typography>
         </Box>
 
+        {/* Quick social login option */}
         <Button fullWidth onClick={handleGoogleLogin} disabled={googleLoading} sx={{
           py: 1.5, borderRadius: "12px",
           background: "rgba(255,255,255,0.07)",
@@ -172,6 +182,7 @@ export default function LoginPage() {
           <Divider sx={{ flex: 1, borderColor: "rgba(255,255,255,0.1)" }} />
         </Box>
 
+        {/* Credentials input area */}
         <TextField label="Email Address" type="email" fullWidth required
           value={email} onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
@@ -195,6 +206,7 @@ export default function LoginPage() {
           sx={inputSx}
         />
 
+        {/* Dynamic error alert based on catch or response */}
         {errorMsg && (
           <Alert severity="error" sx={{
             borderRadius: "10px", background: "rgba(252,129,129,0.1)",
@@ -219,6 +231,7 @@ export default function LoginPage() {
           {loading ? <CircularProgress size={22} sx={{ color: "white" }} /> : "Sign In"}
         </Button>
 
+        {/* Navigate to Register if the user doesn't have an account */}
         <Typography sx={{ textAlign: "center", fontSize: "0.83rem", color: "rgba(255,255,255,0.4)" }}>
           Don't have an account?{" "}
           <Box component="span" onClick={() => navigate("/register")}
