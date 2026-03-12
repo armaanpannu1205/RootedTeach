@@ -4,6 +4,14 @@ import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
 import './StudentDashboard.css';
 import './Account.css';
 
+const DEFAULT_USER = {
+  name:      localStorage.getItem('username') || '',
+  email:     localStorage.getItem('email')    || '',
+  studentId: localStorage.getItem('userId')   || '—',
+  major:     '',
+  year:      '',
+};
+
 function Account() {
   const navigate = useNavigate();
 
