@@ -12,32 +12,20 @@ function OurTeam() {
         <Card
           image={Images.IntroArman.src}
           name="Arman Pannu"
-          role="Lead Developer"
+          role="Lead Operations Developer"
           about="Hi! My name is Arman and I am a 3rd year UCLA student, majoring in Linguistics and Computer Science. In my free time I like to go to the gym, vibecode and hang out with friends!"
         />
-        <Card
-          image={Images.IntroArman.src}
-          name="Arman Pannu"
-          role="Lead Developer"
-          about="Hi guys! My name is Arman and I am a 3rd year UCLA student, majoring in Linguistics and Computer Science. In my free time I like to go to the gym, vibecode and hang out with friends!"
+         <Card
+          image={Images.IntroShogo.src}
+          name="Shogo Toiyama"
+          role="Co-Lead Developer"
+          about="Hi guys! My name is Shogo and I am a 3rd year UCLA student, majoring in Computer Science. I’ve always loved creating things and I love the digital world is its infinite potential"
         />
          <Card
-          image={Images.IntroArman.src}
-          name="Arman Pannu"
-          role="Lead Developer"
-          about="Hi guys! My name is Arman and I am a 3rd year UCLA student, majoring in Linguistics and Computer Science. In my free time I like to go to the gym, vibecode and hang out with friends!"
-        />
-         <Card
-          image={Images.IntroArman.src}
-          name="Arman Pannu"
-          role="Lead Developer"
-          about="Hi guys! My name is Arman and I am a 3rd year UCLA student, majoring in Linguistics and Computer Science. In my free time I like to go to the gym, vibecode and hang out with friends!"
-        />
-         <Card
-          image={Images.IntroArman.src}
-          name="Arman Pannu"
-          role="Lead Developer"
-          about="Hi guys! My name is Arman and I am a 3rd year UCLA student, majoring in Linguistics and Computer Science. In my free time I like to go to the gym, vibecode and hang out with friends!"
+          image={Images.IntroJuenn.src}
+          name="Juenn Kang"
+          role="Front-End Developer"
+          about="Hi, My name is Jueun and I am a 3rd year at UCLA, majoring in Linguistics and Computer Science. My favorite things are taking photos, listening to music, playing the guitar, and going to the beach!"
         />
       </div>
     </div>
