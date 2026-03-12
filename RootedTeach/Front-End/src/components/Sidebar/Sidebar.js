@@ -58,8 +58,8 @@ function Sidebar({
             ←
           </button>
           <div className="sidebar__course-header">
-            <div className="sidebar__course-code">{course.code}</div>
-            <div className="sidebar__course-name">{course.name}</div>
+            <div className="sidebar__course-name">{course.name || course.className || 'Class'}</div>
+            <div className="sidebar__course-code">{course.code || course.classCode || ''}</div>
           </div>
         </div>
 
