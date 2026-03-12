@@ -1,6 +1,6 @@
 import "./OurTeam.css";
 import Card from "./Card";
-import { Images } from "../../Images/Images.js";
+import { Images } from "./Assets/Images.js";
 
 function OurTeam() {
   return (

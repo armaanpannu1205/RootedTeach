@@ -13,7 +13,7 @@ const AddStudentsModal = ({ isOpen, onClose, classId }) => {
     e.preventDefault();
     try {
       // search for Students via email
-      const searchRes = await fetch(`http://localhost:5000/api/auth/user?email=${email}`);
+      const searchRes = await fetch(`http://localhost:5001/api/auth/user?email=${email}`);
       const userData = await searchRes.json();
   
       if (!userData._id) {
@@ -22,7 +22,7 @@ const AddStudentsModal = ({ isOpen, onClose, classId }) => {
       }
   
       // add class
-      const res = await fetch(`http://localhost:5000/api/classes/${classId}/students`, {
+      const res = await fetch(`http://localhost:5001/api/classes/${classId}/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId: userData._id }),

@@ -1,74 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
+import { api } from '../../utils/api';
 import './StudentDashboard.css';
-
-//const SAMPLE_COURSES = [
-//  { id: 'cs35l', code: 'CS 35L', name: 'Software Construction', prof: 'Eggert', color: 0, assignments: 3, upcoming: 1 },
-//  { id: 'math161', code: 'MATH 161', name: 'Applied Numerical Methods', prof: 'Clifton', color: 1, assignments: 5, upcoming: 2 },
-//  { id: 'cs180', code: 'CS 180', name: 'Introduction to Algorithms and Complexity', prof: 'Park', color: 2, assignments: 2, upcoming: 0 },
-//];
 
 function StudentDashboard() {
   const navigate = useNavigate();
-/*  const [courses, setCourses] = useState(() => {
-    try {
-      const saved = localStorage.getItem('courses');
-      return saved ? JSON.parse(saved) : SAMPLE_COURSES;
-    } catch {
-      return SAMPLE_COURSES;
-    }
-  }); */
-
-const [courses, setCourses] = useState([]);
-
-useEffect(() => {
-  const fetchCourses = async () => {
-    try {
-      const studentId = localStorage.getItem('userId');
-      const res = await fetch(`http://localhost:5000/api/classes/student/${studentId}`);
-      const data = await res.json();
-      setCourses(data);
-    } catch (err) {
-      console.error('Failed to fetch courses:', err);
-    }
-  };
-  fetchCourses();
-}, []);
-
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [code, setCode] = useState('');
+  const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState('');
   const [toast, setToast] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const studentId = localStorage.getItem('userId');
 
   useEffect(() => {
-    localStorage.setItem('courses', JSON.stringify(courses));
-  }, [courses]);
+    api.get(`/api/classes/student/${studentId}`)
+      .then(r => r.json())
+      .then(data => setCourses(Array.isArray(data) ? data : []))
+      .catch(() => setCourses([]))
+      .finally(() => setLoading(false));
+  }, [studentId]);
 
-  function addCourse() {
-    if (!code.trim()) return;
-    const newCourse = {
-      id: code.toLowerCase().replace(/\s/g, '_') + '_' + Date.now(),
-      code: code.trim().toUpperCase(),
-      name: `${code.trim().toUpperCase()} class`,
-      prof: 'Professor',
-      color: courses.length % COURSE_COLORS.length,
-      assignments: 0,
-      upcoming: 0,
-    };
-    setCourses([...courses, newCourse]);
-    setCode('');
-    setShowModal(false);
-    setToast('added the class');
-    setTimeout(() => setToast(''), 3000);
-  }
+  useEffect(() => { localStorage.setItem('courses', JSON.stringify(courses)); }, [courses]);
 
-  function deleteCourse(id) 
-  {
-    setCourses(courses.filter((c) => c.id !== id));
-    setDeleteTarget(null);
-    setToast('🗑️ Class removed.');
-    setTimeout(() => setToast(''), 3000);
+  async function joinCourse() {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) return;
+    setJoining(true); setJoinError('');
+    try {
+      const res = await api.post('/api/classes/join', { classCode: trimmed });
+      const data = await res.json();
+      if (!res.ok) { setJoinError(data.message || 'Failed to join class.'); return; }
+      setCourses(prev => [...prev, data.class]);
+      setCode(''); setShowModal(false);
+      setToast(`✅ Joined ${data.class.className}!`);
+      setTimeout(() => setToast(''), 3000);
+    } catch { setJoinError('Could not connect to server.'); }
+    finally { setJoining(false); }
   }
 
   function openCourse(course) {
@@ -76,115 +47,100 @@ useEffect(() => {
     navigate('/course');
   }
 
+  const totalAssignments = courses.reduce((a, c) => a + (c.assignments || 0), 0);
+  const totalUpcoming    = courses.reduce((a, c) => a + (c.upcoming    || 0), 0);
+
   return (
     <div className="app-layout">
-      <Sidebar courses={courses} activePage="dashboard" />
+      <Sidebar courses={courses} activePage="dashboard"/>
 
       <div className="main">
         <div className="topbar">
           <div>
             <h1>Dashboard</h1>
-            <p className="greeting">Welcome to RootedTeach 👋</p>
+            <p className="greeting">Welcome back, {localStorage.getItem('username') || 'Student'} 👋</p>
           </div>
-          <button className="add-btn" onClick={() => setShowModal(true)}>
-            + Add class
+          <button className="add-btn" onClick={() => { setShowModal(true); setJoinError(''); setCode(''); }}>
+            + Join class
           </button>
         </div>
 
         <div className="stats-row">
-          <div className="stat-card">
-            <div className="stat-val">{courses.length}</div>
-            <div className="stat-label">already taking</div>
-          </div>
-          <div className="stat-card">
-            {Array.isArray(courses) ? courses.reduce((a, c) => a + c.assignments, 0) : 0}
-            <div className="stat-label">Assignments</div>
-          </div>  
-          <div className="stat-card">
-            {Array.isArray(courses) ? courses.reduce((a, c) => a + c.upcoming, 0) : 0}
-            <div className="stat-label">Due upcoming</div>
-          </div>
+          <div className="stat-card"><div className="stat-val">{loading ? '…' : courses.length}</div><div className="stat-label">Enrolled classes</div></div>
+          <div className="stat-card"><div className="stat-val">{totalAssignments}</div><div className="stat-label">Assignments</div></div>
+          <div className="stat-card"><div className="stat-val">{totalUpcoming}</div><div className="stat-label">Due upcoming</div></div>
         </div>
 
         <div className="section-title">My classes ({courses.length})</div>
         <div className="courses-grid">
-          {(!Array.isArray(courses) || courses.length === 0) && (
-            <div className="empty-state">
-              <div className="empty-icon">📚</div>
-              <div>You have no class yet.<br />Please enter the code to add the class.</div>
-            </div>
+          {loading && <div className="empty-state"><div className="empty-icon">⏳</div><div>Loading your classes…</div></div>}
+          {!loading && courses.length === 0 && (
+            <div className="empty-state"><div className="empty-icon">📚</div><div>You have no classes yet.<br/>Ask your professor for the 6-letter class code.</div></div>
           )}
-          {Array.isArray(courses) && courses.map((c) => (
-            <div className="course-card" key={c._id}>
-            <div
-              className="card-header"
-              style={{ backgroundColor: c.color || '#0f1646' }}
-              onClick={() => openCourse(c)}
-            >
-              <div className="card-code">{c.className}</div>
-              <button
-                className="card-delete-btn"
-                onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}
-                title="Remove class"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="card-body" onClick={() => openCourse(c)}>
-              <div className="card-title">{c.className}</div>
-              <div className="card-prof">{c.teacher?.username}</div>
-              <div className="card-meta">
-                <span className="badge">{c.assignments} Assignment</span>
-                {c.upcoming > 0 && (
-                  <span className="badge warn">{c.upcoming} Due is coming</span>
-                )}
+          {courses.map(c => {
+            const id = c.id || c._id;
+            const colorIndex = typeof c.color === 'number' ? c.color % COURSE_COLORS.length : null;
+            const bgColor = colorIndex !== null ? COURSE_COLORS[colorIndex].gradient : (c.color || '#0f1646');
+            return (
+              <div className="course-card" key={id}>
+                <div className="card-header" style={{ background: bgColor }} onClick={() => openCourse(c)}>
+                  <div className="card-code">{c.className}</div>
+                  <button className="card-delete-btn" onClick={e => { e.stopPropagation(); setDeleteTarget(c); }} title="Leave class">✕</button>
+                </div>
+                <div className="card-body" onClick={() => openCourse(c)}>
+                  <div className="card-title">{c.className}</div>
+                  <div className="card-prof">{c.teacher?.username ? `Prof. ${c.teacher.username}` : 'No teacher assigned'}</div>
+                  <div className="card-meta">
+                    {c.quarter && <span className="badge">{c.quarter}</span>}
+                    <span className="badge">{c.assignments || 0} assignments</span>
+                    {c.upcoming > 0 && <span className="badge warn">{c.upcoming} due soon</span>}
+                    {c.classCode && <span className="badge" style={{fontFamily:'monospace',letterSpacing:'.08em'}}>{c.classCode}</span>}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
-    </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal">
-            <h2>Add class</h2>
-            <p>Enter the code that you got from the professor.</p>
-            <input
-              placeholder="Example: CS 35L"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addCourse()}
-              autoFocus
-            />
+            <h2>Join a class</h2>
+            <p>Enter the 6-letter code your professor gave you.</p>
+            <input placeholder="e.g. A3BF9K" value={code}
+              onChange={e => { setCode(e.target.value.toUpperCase()); setJoinError(''); }}
+              onKeyDown={e => e.key === 'Enter' && joinCourse()}
+              autoFocus maxLength={6}
+              style={{ textTransform:'uppercase', letterSpacing:'.12em', fontWeight:600 }}/>
+            {joinError && <p style={{color:'#e05f5f',fontSize:13,marginTop:-12,marginBottom:16}}>⚠️ {joinError}</p>}
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="add-btn" onClick={addCourse}>Add</button>
+              <button className="add-btn" onClick={joinCourse} disabled={joining}>{joining ? 'Joining…' : 'Join'}</button>
             </div>
           </div>
         </div>
       )}
 
-{deleteTarget && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setDeleteTarget(null)}>
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setDeleteTarget(null)}>
           <div className="modal modal--danger">
             <div className="modal-danger-icon">🗑️</div>
-            <h2>Remove class?</h2>
-            <p>
-              <strong>{deleteTarget.code}</strong> — {deleteTarget.name}<br />
-              This will remove the class from your dashboard.
-            </p>
+            <h2>Leave class?</h2>
+            <p><strong>{deleteTarget.className}</strong><br/>This will remove the class from your dashboard.</p>
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => setDeleteTarget(null)}>Cancel</button>
-              <button className="btn-danger" onClick={() => deleteCourse(deleteTarget.id)}>Remove</button>
+              <button className="btn-danger" onClick={() => {
+                setCourses(prev => prev.filter(c => (c.id||c._id) !== (deleteTarget.id||deleteTarget._id)));
+                setDeleteTarget(null);
+                setToast('🗑️ Left class.'); setTimeout(()=>setToast(''),3000);
+              }}>Leave</button>
             </div>
           </div>
         </div>
       )}
-
       {toast && <div className="toast">{toast}</div>}
     </div>
-
   );
 }
 

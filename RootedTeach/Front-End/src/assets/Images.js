@@ -7,6 +7,12 @@ export const Images = {
       },
     IntroArman: {
       src: "https://i.imgur.com/bOoofSw.jpg",
+    },
+    IntroShogo: {
+      src: "https://i.imgur.com/6FpIPOH.jpg",
+    },
+    IntroJuenn: {
+      src: "https://i.imgur.com/9mdMKhL.jpg",
     }
   };
   
