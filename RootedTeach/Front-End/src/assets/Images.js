@@ -16,6 +16,9 @@ export const Images = {
     },
     IntroRica: {
       src: "https://i.imgur.com/rhzXdWn.jpg",
+    },
+    IntroShige: {
+      src: "https://i.imgur.com/NIUkwsF.jpg"
     }
   };
   
