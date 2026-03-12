@@ -27,10 +27,16 @@ function OurTeam() {
           role="Front-End Developer"
           about="Hi, My name is Jueun and I am a 3rd year at UCLA, majoring in Linguistics and Computer Science. My favorite things are taking photos, listening to music, playing the guitar, and going to the beach!"
         />
+         <Card
+          image={Images.IntroRica.src}
+          name="Rica Kotani"
+          role="Front-End Developer"
+          about="Hello! My name is Rica and I am a 3rd year at UCLA, majoring in Linguistics and Computer Science. In my free time I like going to concerts, cute cafes & restaurants, and doing my nails!"
+        />
       </div>
     </div>
     </div>
   );
-}
+} 
 
 export default OurTeam;

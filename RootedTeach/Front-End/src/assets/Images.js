@@ -13,6 +13,9 @@ export const Images = {
     },
     IntroJuenn: {
       src: "https://i.imgur.com/9mdMKhL.jpg",
+    },
+    IntroRica: {
+      src: "https://i.imgur.com/rhzXdWn.jpg",
     }
   };
   
