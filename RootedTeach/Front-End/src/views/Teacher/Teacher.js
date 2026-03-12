@@ -1,12 +1,12 @@
-/*The main teacher dashboard, shown after login
-this page displays all the classes the teacher created with options to
-add, edit, and delete classes. */
+/* Teacher.js - The main teacher dashboard, shown immediately after login. */
+/* Displays all classes the teacher created, with options to add, edit, and delete. */
 
 import React, { useState, useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClassTile from './ClassTile.js';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import AddClassModal from './AddClassModal';
+import { api } from '../../utils/api';
 import './Teacher.css';
 
 function Teacher() {
@@ -14,67 +14,68 @@ function Teacher() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const teacherId = localStorage.getItem('userId');
-
-  useEffect(() => {
-    const fetchClasses = async () => {
-      const teacherId = localStorage.getItem('userId');
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5001/api/classes/teacher/${teacherId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const data = await res.json();
-      setClasses(Array.isArray(data) ? data : []);
-    };
-    fetchClasses();
-  }, []);
-
   const navigate = useNavigate();
 
+  // Load the teacher's classes as soon as the dashboard mounts
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const res = await api.get(`/api/classes/teacher/${teacherId}`);
+        const data = await res.json();
+        setClasses(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch classes:', err);
+      }
+    };
+    if (teacherId) fetchClasses();
+  }, [teacherId]);
+
+  // Clears the session and boots the user back to the landing page
   const handleLogout = () => {
     localStorage.clear();
     navigate('/');
   };
 
   // POST new class to the backend, then append it to local state
+  // TODO: If we are editing an existing class, this should probably be a PUT request later!
   const handleAddClass = async (newClass) => {
     try {
-      const res = await fetch('http://localhost:5001/api/classes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          className: newClass.title,
-          courseName: newClass.courseName,
-          quarter: newClass.quarter,
-          color: newClass.color,
-          teacherId: teacherId,
-          syllabus: newClass.syllabus || null,
-        }),
+      const res = await api.post('/api/classes', {
+        className: newClass.title,
+        courseName: newClass.courseName,
+        quarter: newClass.quarter,
+        color: newClass.color,
+        teacherId: teacherId,
+        syllabus: newClass.syllabus || null,
       });
       const saved = await res.json();
+      
+      // Optimistically update the UI with the newly created class from the server
       setClasses((prev) => [...prev, saved]);
     } catch (err) {
       console.error('Failed to save class:', err);
     }
+    
+    // Always close the modal and reset edit state, regardless of success/fail
     setIsModalOpen(false);
     setEditingIndex(null);
   };
 
-
-  // // DELETE class from backend, then remove it from local state
+  // DELETE class from backend, then remove it from local state
   const handleDelete = async (classId) => {
     if (!classId) { console.error('No classId to delete'); return; }
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5001/api/classes/${classId}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await api.del(`/api/classes/${classId}`);
       console.log('Delete response:', res.status);
-    } catch (e) { console.error('Delete failed:', e); }
+    } catch (e) { 
+      console.error('Delete failed:', e); 
+    }
+    
+    // Filter the deleted class out of the UI instantly
     setClasses((prev) => prev.filter(c => (c.id || c._id) !== classId));
   };
 
-  //opens the modal in edit mode, 
+  // Opens the AddClassModal in edit mode by passing in the index of the selected class
   const handleEdit = (index) => {
     setEditingIndex(index);
     setIsModalOpen(true);
@@ -86,6 +87,7 @@ function Teacher() {
 
   return (
     <div className="teacher-container">
+      {/* ── Modal handles both creating and editing classes ── */}
       <AddClassModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingIndex(null); }}
@@ -93,10 +95,10 @@ function Teacher() {
         initialData={editingIndex !== null ? { ...classes[editingIndex], title: classes[editingIndex].className } : null}
       />
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar Navigation ── */}
       <Sidebar role="teacher" classes={classes} />
 
-      {/* ── Main ── */}
+      {/* ── Main Dashboard Content ── */}
       <main className="teacher-main">
         <div className="teacher-main-header">
           <div>
@@ -111,6 +113,7 @@ function Teacher() {
           </button>
         </div>
 
+        {/* ── High-level summary metrics ── */}
         <div className="teacher-stats-row">
           <div className="teacher-stat-card">
             <div className="teacher-stat-num">{classes.length}</div>
@@ -130,6 +133,7 @@ function Teacher() {
           <h2>My classes ({classes.length})</h2>
         </div>
 
+        {/* ── Dynamic grid of ClassTiles ── */}
         <div className="teacher-class-list">
           {classes.length > 0 ? (
             <div className="teacher-class-grid">

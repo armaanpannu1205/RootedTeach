@@ -4,14 +4,13 @@ import { api } from '../../utils/api';
 import './Teacher.css';
 import './TCourseDashboard.css';
 
-/*the main teacher COURSE dashboard page includes the sub-tabs such as syllabus, assignments, grades
-caldendar, students and accouncements. Code for helper components, helper functions, and dataflow.
-// ── Helpers  
+// ── Shared Helpers & Constants ──
 const today = new Date();
 const ymd = (d) => d.toISOString().slice(0, 10);
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const WDAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+// Utility to map a raw percentage score to a letter grade and specific UI colors
 function letterGrade(pct) {
   if (pct >= 93) return { letter: 'A',  color: '#38a169', bg: '#f0fff4' };
   if (pct >= 90) return { letter: 'A-', color: '#38a169', bg: '#f0fff4' };
@@ -27,6 +26,7 @@ function letterGrade(pct) {
   return           { letter: 'F',  color: '#c53030', bg: '#fff5f5' };
 }
 
+// Determines the visual styling of the AI detection badge based on the score threshold
 function aiMeta(score) {
   if (score == null) return null;
   if (score >= 70) return { label: 'Likely AI-generated', color: '#e53e3e', bg: 'rgba(229,62,62,0.08)', icon: 'AI', border: '#e53e3e40' };
@@ -34,6 +34,7 @@ function aiMeta(score) {
   return                   { label: 'Likely human-written', color: '#38a169', bg: 'rgba(56,161,105,0.08)', icon: 'Human', border: '#38a16940' };
 }
 
+// SVG Path strings for the sidebar navigation icons
 const NAV_ICONS = {
   back:     "M19 12H5M12 5l-7 7 7 7",
   assign:   "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2",
@@ -44,7 +45,7 @@ const NAV_ICONS = {
   syllabus: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
 };
 
-// ── AI Score Ring  
+// Shared UI Component: Circular AI Score Indicator
 function AiRing({ score, size = 56 }) {
   if (score == null) return <div style={{width:size,height:size,borderRadius:'50%',background:'#f4f4f8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'#aaa'}}>N/A</div>;
   const meta = aiMeta(score);
@@ -62,7 +63,7 @@ function AiRing({ score, size = 56 }) {
   );
 }
 
-// ── AI Report Modal with Claude analysis 
+// Sub-component: AI Report Modal (Claude Integration)
 function AiReportModal({ sub, studentName, assignmentTitle, onClose }) {
   const meta         = aiMeta(sub.aiScore);
   const score        = sub.aiScore;
@@ -76,6 +77,7 @@ function AiReportModal({ sub, studentName, assignmentTitle, onClose }) {
   const [reportError, setReportError]       = useState('');
   const [reportGenerated, setReportGenerated] = useState(false);
 
+  // Rate limiting to prevent accidental over-spending on the Anthropic API
   const LIMIT = 5;
   const STORAGE_KEY = 'claude_report_usage';
 
@@ -96,11 +98,17 @@ function AiReportModal({ sub, studentName, assignmentTitle, onClose }) {
   const usageCount = getUsage();
   const limitReached = usageCount >= LIMIT;
 
+  // Triggers the backend proxy to call the Claude API and analyze the student's submission
   async function generateReport() {
     if (limitReached) { setReportError(`Daily limit of ${LIMIT} reports reached. Resets tomorrow.`); return; }
-    setLoadingReport(true); setReportError('');
+    
+    setLoadingReport(true); 
+    setReportError('');
+    
     const aiList    = aiSignals.map(s => s.explanation).join('; ') || 'None detected';
     const humanList = humanSignals.map(s => s.explanation).join('; ') || 'None detected';
+    
+    // Construct the context prompt for Claude
     const prompt = `You are an academic integrity assistant reviewing a student's code submission for a university professor.
 
 Assignment: "${assignmentTitle}"
@@ -115,11 +123,18 @@ The student's actual code is included below. Your job is to review it directly a
       const res = await api.post('/api/claude', { prompt, filePath: sub.filePath });
       const data = await res.json();
       if (!res.ok) { setReportError(data.message || 'Claude API error'); return; }
-      if (data.text) { setClaudeReport(data.text); setReportGenerated(true); incrementUsage(); }
-      else setReportError('No response from Claude.');
+      if (data.text) { 
+        setClaudeReport(data.text); 
+        setReportGenerated(true); 
+        incrementUsage(); 
+      } else {
+        setReportError('No response from Claude.');
+      }
     } catch (e) {
       setReportError('Failed to connect to server. Is the backend running?');
-    } finally { setLoadingReport(false); }
+    } finally { 
+      setLoadingReport(false); 
+    }
   }
 
   return (
@@ -132,7 +147,7 @@ The student's actual code is included below. Your job is to review it directly a
         overflow:'auto',boxShadow:'0 32px 80px rgba(0,0,0,0.22)',animation:'slideUp .22s ease'
       }} onClick={e=>e.stopPropagation()}>
 
-        {/* Header */}
+        {/* Modal Header showing the score and student info */}
         <div style={{
           background: score >= 70 ? 'linear-gradient(135deg,#fff1f2,#ffe4e6)'
                     : score >= 40 ? 'linear-gradient(135deg,#fffbeb,#fef3c7)'
@@ -161,6 +176,8 @@ The student's actual code is included below. Your job is to review it directly a
             </div>
             <button onClick={onClose} style={{background:'rgba(0,0,0,0.07)',border:'none',borderRadius:'50%',width:32,height:32,cursor:'pointer',color:'#6b7280',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:18}}>&#x2715;</button>
           </div>
+          
+          {/* Spectrum Bar indicating human vs AI likelihood */}
           <div style={{marginTop:16}}>
             <div style={{display:'flex',justifyContent:'space-between',fontSize:10,fontWeight:600,color:'#9ca3af',marginBottom:5,textTransform:'uppercase',letterSpacing:.5}}>
               <span>Human</span><span>AI-Generated</span>
@@ -171,11 +188,12 @@ The student's actual code is included below. Your job is to review it directly a
           </div>
         </div>
 
-        {/* Body */}
+        {/* Modal Body: Signals and Claude Analysis */}
         <div style={{padding:'20px 28px 28px',display:'flex',flexDirection:'column',gap:16}}>
 
-          {/* Signals grid */}
+          {/* Breakdown of specific signals found by the local ML model */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            {/* AI Signals Column */}
             <div style={{background:'#fef2f2',borderRadius:12,padding:14,border:'1px solid #fecaca'}}>
               <div style={{display:'flex',alignItems:'center',marginBottom:10}}>
                 <span style={{fontSize:11,fontWeight:800,color:'#e53e3e',textTransform:'uppercase',letterSpacing:.6}}>AI Signals</span>
@@ -190,6 +208,8 @@ The student's actual code is included below. Your job is to review it directly a
                   </div>
                 ))}
             </div>
+            
+            {/* Human Signals Column */}
             <div style={{background:'#f0fdf4',borderRadius:12,padding:14,border:'1px solid #bbf7d0'}}>
               <div style={{display:'flex',alignItems:'center',marginBottom:10}}>
                 <span style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:.6}}>Human Signals</span>
@@ -206,7 +226,7 @@ The student's actual code is included below. Your job is to review it directly a
             </div>
           </div>
 
-          {/* Claude report section */}
+          {/* Claude LLM Deep Dive Analysis Section */}
           <div style={{borderRadius:14,border:'1px solid #e8eaf0',overflow:'hidden'}}>
             <div style={{background:'linear-gradient(135deg,#1a1a2e,#3d405b)',padding:'14px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
               <div>
@@ -253,7 +273,7 @@ The student's actual code is included below. Your job is to review it directly a
             </div>
           </div>
 
-          {/* Methodology note */}
+          {/* Disclaimer regarding the ML model */}
           <div style={{background:'#f8f9ff',borderRadius:10,padding:'12px 14px',border:'1px solid #e8eaf0'}}>
             <div style={{fontSize:10,fontWeight:700,color:'#8b9fbd',textTransform:'uppercase',letterSpacing:.6,marginBottom:5}}>About this score</div>
             <p style={{fontSize:11,color:'#6b7280',lineHeight:1.6,margin:0}}>
@@ -266,15 +286,17 @@ The student's actual code is included below. Your job is to review it directly a
   );
 }
 
-// ── AI Badge (inline, opens modal) ────────────────────────
+// ── Shared Component: Trigger button to open the AI Report Modal ──
 function AiDetailPanel({ sub, assignmentPoints, studentName, assignmentTitle }) {
   const [showReport, setShowReport] = useState(false);
   const meta = aiMeta(sub.aiScore);
+  
   if (sub.aiScore == null) return (
     <div style={{fontSize:12,color:'#aaa',padding:'5px 0',display:'flex',alignItems:'center',gap:5}}>
       <span style={{opacity:.5}}>—</span> No AI analysis (non-code file)
     </div>
   );
+  
   return (
     <>
       <button onClick={() => setShowReport(true)} style={{
@@ -285,6 +307,7 @@ function AiDetailPanel({ sub, assignmentPoints, studentName, assignmentTitle }) 
         <span style={{display:'flex',alignItems:'center',gap:6}}>{meta.icon} {sub.aiScore}/100 — {meta.label}</span>
         <span style={{fontSize:11,opacity:.65,background:'rgba(0,0,0,0.06)',borderRadius:6,padding:'2px 8px'}}>View full report →</span>
       </button>
+      
       {showReport && (
         <AiReportModal
           sub={sub}
@@ -297,9 +320,8 @@ function AiDetailPanel({ sub, assignmentPoints, studentName, assignmentTitle }) 
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// SYLLABUS TAB
-// ══════════════════════════════════════════════════════════
+
+// 1. SYLLABUS TAB
 function TabSyllabus({ color, classId }) {
   const [loading, setLoading]     = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -307,6 +329,7 @@ function TabSyllabus({ color, classId }) {
   const [editForm, setEditForm]   = useState({ className: '', quarter: '' });
   const [schedule, setSchedule]   = useState([]);
 
+  // Fetch the latest class data, including the syllabus object
   useEffect(() => {
     if (!classId) return;
     api.get(`/api/classes/${classId}`)
@@ -320,18 +343,22 @@ function TabSyllabus({ color, classId }) {
       .catch(console.error);
   }, [classId]);
 
+  // Persist changes to the weekly schedule back to the database
   const handleSave = async () => {
     try {
       const updatedSyllabus = { ...(course.syllabus || {}), weeks: schedule };
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5001/api/classes/${classId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ className: editForm.className, quarter: editForm.quarter, syllabus: updatedSyllabus }),
+      // Using our API helper makes this a quick one-liner!
+      await api.put(`/api/classes/${classId}`, { 
+        className: editForm.className, 
+        quarter: editForm.quarter, 
+        syllabus: updatedSyllabus 
       });
+      
       setCourse({ ...course, className: editForm.className, quarter: editForm.quarter, syllabus: updatedSyllabus });
       setIsEditing(false);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e); 
+    }
   };
 
   const handleScheduleChange = (idx, field, val) => {
@@ -407,9 +434,8 @@ function TabSyllabus({ color, classId }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// ASSIGNMENTS TAB (real Firebase data)
-// ══════════════════════════════════════════════════════════
+
+// 2. ASSIGNMENTS TAB
 function TabAssignments({ color, classId, teacherId }) {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -425,21 +451,26 @@ function TabAssignments({ color, classId, teacherId }) {
       const res = await api.get(`/api/assignments/class/${classId}`);
       const data = await res.json();
       setAssignments(Array.isArray(data) ? data : []);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error(e); 
+    } finally { 
+      setLoading(false); 
+    }
   }, [classId]);
 
   useEffect(() => { fetchAssignments(); }, [fetchAssignments]);
 
-  // Sync active assignment with fresh data
+  // Keep the active assignment view synced if the underlying data updates (e.g. after saving a grade)
   useEffect(() => {
     if (active) setActive(prev => assignments.find(a => a.id === prev.id) || prev);
-  }, [assignments]);
+  }, [assignments, active]);
 
+  // Handle creating a new assignment, including optional file attachments
   const create = async (e) => {
     e.preventDefault();
     if (!form.title.trim()) return;
     try {
+      // Must use FormData because we are allowing file uploads!
       const fd = new FormData();
       fd.append('title', form.title);
       fd.append('description', form.description || '');
@@ -448,44 +479,57 @@ function TabAssignments({ color, classId, teacherId }) {
       fd.append('points', String(form.points || 100));
       fd.append('teacherId', teacherId || '');
       if (form.attachedFile) fd.append('file', form.attachedFile);
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5001/api/assignments', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
+      
+      // Post using our API helper, which correctly handles FormData without overriding the Content-Type
+      const res = await api.post('/api/assignments', fd);
       const saved = await res.json();
+      
       if (res.ok) {
         setAssignments(prev => [{ ...saved, submissions: [] }, ...prev]);
         setForm({ title:'', description:'', dueDate:'', points:100, attachedFile: null });
         setShowCreate(false);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e); 
+    }
   };
 
   const del = async (id) => {
     try {
       await api.del(`/api/assignments/${id}`);
       setAssignments(prev => prev.filter(a => a.id !== id));
-      if (active?.id === id) setActive(null);
-    } catch (e) { console.error(e); }
+      if (active?.id === id) setActive(null); // Clear selection if we just deleted it
+    } catch (e) { 
+      console.error(e); 
+    }
   };
 
+  // Save the teacher's grading decisions for a specific student's submission
   const saveGrade = async (assignmentId, studentId) => {
     setSaving(true);
     try {
-      const res = await api.post(`/api/assignments/${assignmentId}/grade/${studentId}`, { score: Number(grading.grade), feedback: grading.feedback });
-      if (res.ok) { await fetchAssignments(); setGrading(null); }
-    } catch (e) { console.error(e); }
+      const res = await api.post(`/api/assignments/${assignmentId}/grade/${studentId}`, { 
+        score: Number(grading.grade), 
+        feedback: grading.feedback 
+      });
+      if (res.ok) { 
+        await fetchAssignments(); // Refresh data to update averages
+        setGrading(null); 
+      }
+    } catch (e) { 
+      console.error(e); 
+    }
     setSaving(false);
   };
 
   return (
     <div className="tab-layout">
+      {/* List Column (Left) */}
       <div className="tab-list-col">
         <button className="add-class-button" style={{width:'100%',marginBottom:14}} onClick={() => setShowCreate(true)}>+ New Assignment</button>
         {loading && <div className="tcd-empty"><p>Loading…</p></div>}
         {!loading && assignments.length === 0 && <div className="tcd-empty"><p>No assignments yet</p></div>}
+        
         {assignments.map(a => {
           const graded = (a.submissions||[]).filter(s => s.score !== null).length;
           const flagged = (a.submissions||[]).filter(s => s.aiScore >= 70).length;
@@ -511,6 +555,7 @@ function TabAssignments({ color, classId, teacherId }) {
         })}
       </div>
 
+      {/* Detail Column (Right) */}
       <div className="tab-detail-col">
         {!active ? (
           <div className="tcd-empty" style={{flex:1}}><p style={{fontWeight:700}}>Select an assignment</p><span>Click one on the left to view details or submissions.</span></div>
@@ -553,11 +598,13 @@ function TabAssignments({ color, classId, teacherId }) {
             {subView === 'submissions' && (
               <div className="asgn-detail-panel">
                 {(active.submissions||[]).length === 0 && <div className="tcd-empty"><p>No submissions yet</p></div>}
+                
                 {(active.submissions||[]).map((sub, idx) => {
                   const name = sub.student?.username || sub.student?._id || 'Unknown';
                   const initial = name.charAt(0).toUpperCase();
                   const isGrading = grading?.subIndex === idx;
                   const meta = aiMeta(sub.aiScore);
+                  
                   return (
                     <div key={sub.student?._id || idx} className="sub-card">
                       <div className="sub-card-top">
@@ -577,7 +624,7 @@ function TabAssignments({ color, classId, teacherId }) {
                           </div>
                         </div>
                         <div style={{display:'flex',alignItems:'center',gap:10}}>
-                          {/* AI ring */}
+                          {/* AI ring chart */}
                           <AiRing score={sub.aiScore} size={50}/>
                           {/* Grade badge */}
                           <div className="sub-grade-badge" style={{background:sub.score!==null?'#f0fff4':'#fff8ee',color:sub.score!==null?'#38a169':'#e8a040'}}>
@@ -586,11 +633,12 @@ function TabAssignments({ color, classId, teacherId }) {
                         </div>
                       </div>
 
-                      {/* AI breakdown */}
+                      {/* Expanding AI details section */}
                       <AiDetailPanel sub={sub} assignmentPoints={active.points} studentName={name} assignmentTitle={active.title}/>
 
                       {sub.feedback && !isGrading && <div className="sub-feedback"> {sub.feedback}</div>}
 
+                      {/* Grading Input Form */}
                       {isGrading ? (
                         <div className="sub-grade-form">
                           <div style={{display:'flex',gap:8,marginBottom:8}}>
@@ -620,6 +668,7 @@ function TabAssignments({ color, classId, teacherId }) {
         )}
       </div>
 
+      {/* Modal for creating a new assignment */}
       {showCreate && (
         <div className="modal-overlay" onClick={()=>setShowCreate(false)}>
           <div className="modal-content" onClick={e=>e.stopPropagation()}>
@@ -649,14 +698,13 @@ function TabAssignments({ color, classId, teacherId }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// GRADES TAB (real Firebase data + server-computed grades)
-// ══════════════════════════════════════════════════════════
+// 3. GRADES TAB 
 function TabGrades({ color, classId }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
+  // Load aggregated stats for the entire class from the backend
   useEffect(() => {
     api.get(`/api/assignments/class/${classId}/stats`)
       .then(r => r.json()).then(data => { setStats(data); setLoading(false); })
@@ -670,6 +718,7 @@ function TabGrades({ color, classId }) {
 
   return (
     <div className="grades-layout">
+      {/* Aggregate Stats Strip */}
       <div className="grades-table-wrap">
         <div className="grades-summary-strip">
           <div className="grades-summary-item"><span className="grades-summary-num">{totalStudents}</span><span>Students</span></div>
@@ -679,6 +728,7 @@ function TabGrades({ color, classId }) {
           {flaggedSubmissions > 0 && <div className="grades-summary-item"><span className="grades-summary-num" style={{color:'#e53e3e'}}>{flaggedSubmissions}</span><span> AI Flagged</span></div>}
         </div>
 
+        {/* Roster grading table */}
         <table className="grades-table">
           <thead>
             <tr>
@@ -693,6 +743,7 @@ function TabGrades({ color, classId }) {
               const lg = sg.pct > 0 && sg.gradedCount > 0 ? letterGrade(sg.pct) : null;
               const aiM = aiMeta(sg.avgAiScore);
               const isSel = selectedStudent?.studentId === sg.studentId;
+              
               return (
                 <tr key={sg.studentId} className={`grades-tr ${isSel?'grades-tr--selected':''}`}
                   style={isSel?{background:color+'10'}:{}} onClick={()=>setSelectedStudent(isSel?null:sg)}>
@@ -721,6 +772,7 @@ function TabGrades({ color, classId }) {
         <div className="grades-hint">Click a student row to view their breakdown</div>
       </div>
 
+      {/* Slide-out or side panel showing specific student details */}
       {selectedStudent && (
         <div className="grades-student-panel">
           <div className="grades-panel-header">
@@ -728,7 +780,7 @@ function TabGrades({ color, classId }) {
             <div><div style={{fontWeight:800,fontSize:16,color:'#1a1f36'}}>{selectedStudent.username}</div><div style={{fontSize:12,color:'#8a8fa8'}}>{selectedStudent.email}</div></div>
           </div>
 
-          {/* AI Score summary */}
+          {/* Individual AI Score summary */}
           {selectedStudent.avgAiScore != null && (() => {
             const aiM = aiMeta(selectedStudent.avgAiScore);
             return (
@@ -739,6 +791,7 @@ function TabGrades({ color, classId }) {
             );
           })()}
 
+          {/* Individual Running Average */}
           {selectedStudent.gradedCount > 0 && (() => {
             const lg = letterGrade(selectedStudent.pct);
             return (
@@ -750,6 +803,7 @@ function TabGrades({ color, classId }) {
             );
           })()}
 
+          {/* List of every assignment and their performance on it */}
           <div className="grades-panel-list">
             {(selectedStudent.breakdown||[]).map(b => {
               const pct = b.score != null ? Math.round((b.score/b.maxPoints)*100) : null;
@@ -777,13 +831,13 @@ function TabGrades({ color, classId }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// STUDENTS TAB (real Firebase data)
-// ══════════════════════════════════════════════════════════
+
+// 4. STUDENTS TAB
 function TabStudents({ color, classId }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // We reuse the stats endpoint here since it contains the full roster info
   useEffect(() => {
     api.get(`/api/assignments/class/${classId}/stats`)
       .then(r => r.json()).then(d => { setStats(d); setLoading(false); })
@@ -791,6 +845,7 @@ function TabStudents({ color, classId }) {
   }, [classId]);
 
   if (loading) return <div className="tcd-empty"><p>Loading…</p></div>;
+  
   const students = stats?.studentGrades || [];
 
   return (
@@ -820,9 +875,8 @@ function TabStudents({ color, classId }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// CALENDAR TAB (kept as-is from original)
-// ══════════════════════════════════════════════════════════
+
+// 5. CALENDAR TAB 
 const TYPE_META = {
   assignment: { label:'Assignment', color:'#7C6FE0', bg:'#f3f1ff' },
   exam:       { label:'Exam',       color:'#E06F6F', bg:'#fef2f2' },
@@ -833,9 +887,12 @@ const uid = () => Math.random().toString(36).slice(2, 8).toUpperCase();
 
 function TabCalendar({ color, assignments }) {
   const [viewDate, setViewDate] = useState(new Date());
+  
+  // Pluck due dates from the assignments array to auto-populate the calendar
   const [events, setEvents] = useState(() =>
     assignments.filter(a=>a.dueDate).map(a => ({ id:'e'+a.id, title: a.title+' Due', date: a.dueDate, type:'assignment' }))
   );
+  
   const [showAdd, setShowAdd] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [form, setForm] = useState({ title:'', type:'assignment', date:'' });
@@ -844,6 +901,7 @@ function TabCalendar({ color, assignments }) {
   const firstDay = new Date(vY,vM,1).getDay();
   const daysInMonth = new Date(vY,vM+1,0).getDate();
   const cells = Array(firstDay).fill(null).concat(Array.from({length:daysInMonth},(_,i)=>i+1));
+  
   const eventsOn = (day) => events.filter(e => { const d=new Date(e.date+'T12:00:00'); return d.getFullYear()===vY&&d.getMonth()===vM&&d.getDate()===day; });
   const isToday = (day) => { const t=new Date(); return t.getFullYear()===vY&&t.getMonth()===vM&&t.getDate()===day; };
   const upcoming = events.filter(e=>new Date(e.date+'T12:00:00')>=new Date()).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,5);
@@ -877,6 +935,8 @@ function TabCalendar({ color, assignments }) {
           })}
         </div>
       </div>
+      
+      {/* Calendar Legend & Upcoming list */}
       <div className="cal-sidebar">
         <div className="cal-panel">
           <div className="cal-panel-title">Event Types</div>
@@ -888,17 +948,14 @@ function TabCalendar({ color, assignments }) {
           {upcoming.map(ev=>{const meta=TYPE_META[ev.type]||TYPE_META.other;const d=new Date(ev.date+'T12:00:00');return(<div key={ev.id} className="cal-upcoming-row" onClick={()=>setSelectedEvent(ev)}><div className="cal-upcoming-dot" style={{background:color}}/><div className="cal-upcoming-info"><div className="cal-upcoming-title">{ev.title}</div><div className="cal-upcoming-meta">{d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div></div><div className="cal-upcoming-type" style={{background:meta.bg,color:meta.color}}>{meta.label}</div></div>);})}
         </div>
       </div>
+      
       {showAdd&&(<div className="modal-overlay" onClick={()=>setShowAdd(false)}><div className="modal-content" onClick={e=>e.stopPropagation()}><h2>Add Event</h2><form className="modal-form" onSubmit={e=>{e.preventDefault();if(!form.title.trim())return;setEvents(prev=>[...prev,{id:'e'+uid(),...form}]);setShowAdd(false);}}><label><div className="modal-form-label-text">Title</div><input className="modal-input" value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} required/></label><label><div className="modal-form-label-text">Type</div><select className="modal-select" value={form.type} onChange={e=>setForm(p=>({...p,type:e.target.value}))}>{Object.entries(TYPE_META).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></label><label><div className="modal-form-label-text">Date</div><input type="date" className="modal-input" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} required/></label><div className="modal-actions"><button type="button" className="modal-button-cancel" onClick={()=>setShowAdd(false)}>Cancel</button><button type="submit" className="modal-button-save">Save</button></div></form></div></div>)}
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// MAIN COMPONENT
-// ══════════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════════
-// ANNOUNCEMENTS TAB
-// ══════════════════════════════════════════════════════════
+
+// 6. ANNOUNCEMENTS TAB
 function TabAnnouncements({ color, classId }) {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading]             = useState(true);
@@ -907,13 +964,17 @@ function TabAnnouncements({ color, classId }) {
   const [saving, setSaving]               = useState(false);
   const teacherName = localStorage.getItem('username') || 'Instructor';
 
+  // Fetch the class data to read its announcements array
   const fetchAnn = useCallback(async () => {
     try {
       const res  = await api.get(`/api/classes/${classId}`);
       const data = await res.json();
       setAnnouncements((data.announcements || []).slice().reverse());
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error(e); 
+    } finally { 
+      setLoading(false); 
+    }
   }, [classId]);
 
   useEffect(() => { fetchAnn(); }, [fetchAnn]);
@@ -921,11 +982,18 @@ function TabAnnouncements({ color, classId }) {
   const post = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.body.trim()) return;
+    
     setSaving(true);
     try {
       const res = await api.post(`/api/classes/${classId}/announcements`, { ...form, teacherName });
-      if (res.ok) { await fetchAnn(); setForm({ title: '', body: '' }); setShowForm(false); }
-    } catch (e) { console.error(e); }
+      if (res.ok) { 
+        await fetchAnn(); 
+        setForm({ title: '', body: '' }); 
+        setShowForm(false); 
+      }
+    } catch (e) { 
+      console.error(e); 
+    }
     setSaving(false);
   };
 
@@ -933,7 +1001,9 @@ function TabAnnouncements({ color, classId }) {
     try {
       await api.del(`/api/classes/${classId}/announcements/${annId}`);
       setAnnouncements(prev => prev.filter(a => a.id !== annId));
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e); 
+    }
   };
 
   return (
@@ -1006,9 +1076,13 @@ function TabAnnouncements({ color, classId }) {
   );
 }
 
+
+// MAIN COMPONENT WRAPPER
 function TCourseDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Pull class context passed through the router state (from the Teacher Dashboard)
   const state = location.state || {};
   const className  = state.title      || 'Untitled Class';
   const courseName = state.courseName || '';
@@ -1017,22 +1091,26 @@ function TCourseDashboard() {
   const classId    = state.classId    || '';
   const teacherId  = localStorage.getItem('userId');
 
-  const [activeTab, setActiveTab] = useState('assignments');
+  const [activeTab, setActiveTab] = useState('assignments'); // Defines which sub-component renders
   const [codeCopied, setCodeCopied] = useState(false);
   const [classCode] = useState(state.classCode || '—');
   const [assignments, setAssignments] = useState([]);
 
-  // Fetch assignments for calendar
+  // Fetch assignments globally so both the Assignments tab AND the Calendar tab have the data
   useEffect(() => {
     if (classId) {
       api.get(`/api/assignments/class/${classId}`)
-        .then(r => r.json()).then(d => setAssignments(Array.isArray(d)?d:[]))
+        .then(r => r.json())
+        .then(d => setAssignments(Array.isArray(d) ? d : []))
         .catch(console.error);
     }
   }, [classId]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(classCode).then(() => { setCodeCopied(true); setTimeout(()=>setCodeCopied(false),2000); });
+    navigator.clipboard.writeText(classCode).then(() => { 
+      setCodeCopied(true); 
+      setTimeout(() => setCodeCopied(false), 2000); 
+    });
   };
 
   const tabs = [
@@ -1046,6 +1124,8 @@ function TCourseDashboard() {
 
   return (
     <div className="teacher-container">
+      
+      {/* ── Dashboard Sidebar ── */}
       <aside className="teacher-sidebar">
         <div className="sidebar-logo"><div className="sidebar-logo-icon"></div><span className="sidebar-logo-text">RootedTeach</span></div>
         <Link to="/teacher" className="sidebar-back-btn">
@@ -1077,6 +1157,7 @@ function TCourseDashboard() {
         </div>
       </aside>
 
+      {/* ── Main Window area ── */}
       <main className="teacher-main">
         <div className="tcd-page-header">
           <div className="tcd-header-top">
@@ -1085,12 +1166,16 @@ function TCourseDashboard() {
               {courseName&&<div className="tcd-class-course-name">{courseName}</div>}
               <div className="tcd-class-quarter">{quarter}</div>
             </div>
+            
+            {/* Clickable Class Code for easy sharing with students */}
             <div className="tcd-class-code" onClick={handleCopy} title="Click to copy class code">
               <div className="tcd-class-code-label">Class Code</div>
               <div className="tcd-class-code-value" style={{color}}>{classCode}</div>
               <div className="tcd-class-code-hint">{codeCopied?' Copied!':'Click to copy'}</div>
             </div>
           </div>
+          
+          {/* Horizontal navigation tabs */}
           <div className="tcd-tab-bar">
             {tabs.map(tab=>(
               <button key={tab.id} className={`tcd-tab ${activeTab===tab.id?'active':''}`}
@@ -1101,11 +1186,12 @@ function TCourseDashboard() {
           </div>
         </div>
 
+        {/* ── Renders the currently selected sub-component ── */}
         <div className="tcd-tab-content">
           {activeTab==='syllabus'      && <TabSyllabus      color={color} classId={classId}/>}
-          {activeTab==='assignments' && <TabAssignments color={color} classId={classId} teacherId={teacherId}/>}
-          {activeTab==='grades'      && <TabGrades      color={color} classId={classId}/>}
-          {activeTab==='calendar'    && <TabCalendar    color={color} assignments={assignments}/>}
+          {activeTab==='assignments'   && <TabAssignments   color={color} classId={classId} teacherId={teacherId}/>}
+          {activeTab==='grades'        && <TabGrades        color={color} classId={classId}/>}
+          {activeTab==='calendar'      && <TabCalendar      color={color} assignments={assignments}/>}
           {activeTab==='students'      && <TabStudents      color={color} classId={classId}/>}
           {activeTab==='announcements' && <TabAnnouncements color={color} classId={classId}/>}
         </div>

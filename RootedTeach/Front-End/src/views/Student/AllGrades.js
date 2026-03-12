@@ -4,12 +4,14 @@ import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
 import './StudentDashboard.css';
 import './AllGrades.css';
 
+// Fallback dummy data in case the API or localStorage fails to provide real courses
 const SAMPLE_COURSES = [
   { id: 'cs35l',   code: 'CS 35L',   name: 'Software Construction',                    prof: 'Eggert',  color: 0, assignments: 5, upcoming: 1 },
   { id: 'math161', code: 'MATH 161', name: 'Applied Numerical Methods',                 prof: 'Clifton', color: 1, assignments: 5, upcoming: 2 },
   { id: 'cs180',   code: 'CS 180',   name: 'Introduction to Algorithms and Complexity', prof: 'Park',    color: 2, assignments: 2, upcoming: 0 },
 ];
 
+// Hardcoded grade data for the sample courses (TODO: Replace this with real API data later)
 const COURSE_GRADE_DATA = {
   'cs35l': {
     letterGrade: 'A',
@@ -49,7 +51,7 @@ const COURSE_GRADE_DATA = {
   },
 };
 
-// simple donut chart for grade display
+// Reusable SVG donut chart component to visualize the student's current grade percentage
 function DonutChart({ percent, color, size = 100, stroke = 12 }) {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
@@ -57,14 +59,14 @@ function DonutChart({ percent, color, size = 100, stroke = 12 }) {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-      {/* background ring */}
+      {/* Subtle background ring */}
       <circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none"
         stroke="rgba(26,26,46,0.08)"
         strokeWidth={stroke}
       />
-      {/* progress ring */}
+      {/* Foreground progress ring with a smooth CSS transition */}
       <circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none"
@@ -78,17 +80,18 @@ function DonutChart({ percent, color, size = 100, stroke = 12 }) {
   );
 }
 
-// pick a color based on the letter grade
+// Map standard letter grades to our UI color palette
 function gradeColor(letter) {
-  if (letter.startsWith('A')) return '#2ecc8b';
-  if (letter.startsWith('B')) return '#4facfe';
-  if (letter.startsWith('C')) return '#f0a500';
-  return '#e05f5f';
+  if (letter.startsWith('A')) return '#2ecc8b'; // Green for excellent
+  if (letter.startsWith('B')) return '#4facfe'; // Blue for good
+  if (letter.startsWith('C')) return '#f0a500'; // Orange/Yellow for warning
+  return '#e05f5f'; // Red for danger/failing
 }
 
 function AllGrades() {
   const navigate = useNavigate();
-  // use saved courses if available
+  
+  // Try to load cached courses from localStorage, fallback to dummy data if missing
   const [courses] = useState(() => {
     try {
       const saved = localStorage.getItem('courses');
@@ -96,14 +99,16 @@ function AllGrades() {
     } catch { return SAMPLE_COURSES; }
   });
 
-  // track which course card is expanded
-  const [expanded, setExpanded] = useState(null); // courseId of open detail panel
+  // Keep track of which course card has its detailed breakdown table expanded
+  const [expanded, setExpanded] = useState(null);
 
+  // Calculate the average GPA across all courses
+  // Note: This is a simple average, not weighted by course units yet
   const allGpa = courses
     .map(c => COURSE_GRADE_DATA[c.id]?.gpa ?? 0)
     .reduce((a, b) => a + b, 0) / courses.length;
 
-  // save selected course before opening it
+  // Save the selected course to context/localStorage before routing to its specific dashboard
   function openCourse(c) {
     localStorage.setItem('currentCourse', JSON.stringify(c));
     navigate('/course');
@@ -111,6 +116,7 @@ function AllGrades() {
 
   return (
     <div className="app-layout">
+      {/* Main sidebar navigation */}
       <Sidebar courses={courses} activePage="grades" />
 
       <div className="main">
@@ -123,13 +129,14 @@ function AllGrades() {
           </div>
         </div>
 
-        {/* top summary */}
+        {/* Top-level summary statistics cards */}
         <div className="stats-row" style={{ marginBottom: 36 }}>
           <div className="stat-card">
             <div className="stat-val">{courses.length}</div>
             <div className="stat-label">Enrolled courses</div>
           </div>
           <div className="stat-card">
+            {/* Calculate total number of graded assignments across all enrolled courses */}
             <div className="stat-val">
               {courses.reduce((s, c) => s + (COURSE_GRADE_DATA[c.id]?.completed ?? 0), 0)}
             </div>
@@ -145,15 +152,20 @@ function AllGrades() {
         <div className="grades-grid">
           {courses.map((c) => {
             const data = COURSE_GRADE_DATA[c.id];
+            // Skip rendering if we don't have grade data for this course
             if (!data) return null;
+            
+            // Map the course color index to our standard theme colors
             const accent = COURSE_COLORS[c.color % COURSE_COLORS.length].accent;
+            
+            // Calculate progress percentage based on how many items have been graded vs total
             const pct    = Math.round((data.completed / data.total) * 100);
             const lColor = gradeColor(data.letterGrade);
             const isOpen = expanded === c.id;
 
             return (
               <div className="grade-course-card" key={c.id}>
-                {/* course header */}
+                {/* Course Header Banner */}
                 <div
                   className="gcc-header"
                   style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].gradient }}
@@ -164,7 +176,7 @@ function AllGrades() {
                   </div>
                 </div>
 
-                {/* grade summary */}
+                {/* Course Grade Summary Body */}
                 <div className="gcc-body">
                   <div className="gcc-donut-wrap">
                     <DonutChart percent={data.gpa} color={lColor} size={96} stroke={10} />
@@ -179,6 +191,7 @@ function AllGrades() {
                     <div className="gcc-progress-label">
                       Progress · {data.completed}/{data.total} graded
                     </div>
+                    {/* Linear progress bar indicating course completion */}
                     <div className="progress-bar-bg">
                       <div
                         className="progress-bar-fill"
@@ -189,6 +202,7 @@ function AllGrades() {
                       />
                     </div>
                     <div className="gcc-actions">
+                      {/* Toggle the detailed breakdown table */}
                       <button
                         className="gcc-btn-detail"
                         onClick={() => setExpanded(isOpen ? null : c.id)}
@@ -206,7 +220,7 @@ function AllGrades() {
                   </div>
                 </div>
 
-                {/* expanded grade table */}
+                {/* Expanded Detailed Grade Table (Only visible if isOpen is true) */}
                 {isOpen && (
                   <div className="gcc-detail">
                     <table className="gcc-table">
@@ -226,6 +240,7 @@ function AllGrades() {
                             <td style={{ color: 'var(--muted)' }}>{item.type}</td>
                             <td>{item.weight}</td>
                             <td>
+                              {/* Display score if graded, otherwise show a dash */}
                               {item.score !== null
                                 ? `${item.score} / ${item.max}`
                                 : '—'}

@@ -1,7 +1,10 @@
+/* AddClassModal.js - Multi-step wizard for teachers to create or edit a class. */
+/* Breaks down complex syllabus and grading data into a 3-step form for better UX. */
+
 import React, { useState, useEffect } from 'react';
 import './AddClassModal.css';
 
-// MUI Icons
+// MUI Icons used throughout the form steps
 import SchoolIcon        from '@mui/icons-material/School';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PaletteIcon       from '@mui/icons-material/Palette';
@@ -18,8 +21,11 @@ import ArrowForwardIcon  from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon     from '@mui/icons-material/ArrowBack';
 import CheckIcon         from '@mui/icons-material/Check';
 
+// Standard color palette for class themes
 const COLORS = ['#7C6FE0','#E06F6F','#4FBDBA','#E8A040','#4299e1','#38a169','#9F7AEA','#ED8936'];
 const SEASONS = ['Fall','Winter','Spring','Summer'];
+
+// Initialize empty arrays for dynamic lists so the form has default rows to fill
 const DEFAULT_WEEKS = Array.from({ length: 10 }, (_, i) => ({ week: `Week ${i + 1}`, topic: '' }));
 const DEFAULT_GRADING = [
   { category: 'Assignments',  weight: '' },
@@ -29,38 +35,48 @@ const DEFAULT_GRADING = [
 ];
 
 const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
+  // Track which step of the wizard we are currently on
   const [step, setStep]             = useState(1);
-  // Step 1 — basics
+  
+  // Step 1: Basic Identifiers
   const [title, setTitle]           = useState('');
   const [courseName, setCourseName] = useState('');
   const [season, setSeason]         = useState('Winter');
   const [year, setYear]             = useState('');
   const [color, setColor]           = useState('#7C6FE0');
-  // Step 2 — syllabus info
+  
+  // Step 2: Syllabus Details
   const [lectureTime, setLectureTime]   = useState('');
   const [location, setLocation]         = useState('');
   const [officeHours, setOfficeHours]   = useState('');
   const [units, setUnits]               = useState('4');
   const [email, setEmail]               = useState('');
   const [description, setDescription]   = useState('');
-  // Step 3 — schedule + grading
+  
+  // Step 3: Complex Lists (Schedule + Grading)
   const [weeks, setWeeks]     = useState(DEFAULT_WEEKS);
   const [grading, setGrading] = useState(DEFAULT_GRADING);
 
+  // Generate a dynamic list of years starting from the current year
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
 
+  // Reset or populate the form whenever the modal opens or the initial data changes
   useEffect(() => {
     if (!isOpen) return;
-    setStep(1);
+    setStep(1); // Always start at step 1
     setYear(String(currentYear));
+    
     if (initialData) {
+      // Edit mode: Pre-fill all fields with existing class data
       setTitle(initialData.title || initialData.className || '');
       setCourseName(initialData.courseName || '');
       setColor(initialData.color || '#7C6FE0');
+      
       const parts = (initialData.quarter || `Winter ${currentYear}`).split(' ');
       setSeason(parts[0] || 'Winter');
       setYear(parts[1] || String(currentYear));
+      
       const s = initialData.syllabus || {};
       setLectureTime(s.lectureTime || '');
       setLocation(s.location || '');
@@ -68,27 +84,34 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
       setUnits(s.units || '4');
       setEmail(s.email || '');
       setDescription(s.description || '');
+      
+      // Map over existing arrays or fallback to defaults, ensuring we copy them by value
       setWeeks(s.weeks?.length ? s.weeks : DEFAULT_WEEKS.map(w => ({ ...w })));
       setGrading(s.grading?.length ? s.grading : DEFAULT_GRADING.map(g => ({ ...g })));
     } else {
+      // Create mode: Blank slate
       setTitle(''); setCourseName(''); setSeason('Winter'); setColor('#7C6FE0');
       setLectureTime(''); setLocation(''); setOfficeHours(''); setUnits('4');
       setEmail(''); setDescription('');
       setWeeks(DEFAULT_WEEKS.map(w => ({ ...w })));
       setGrading(DEFAULT_GRADING.map(g => ({ ...g })));
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData]); // currentYear isn't needed here as it's a derived constant
 
   if (!isOpen) return null;
 
+  // Helpers to deeply update specific rows in our dynamic arrays
   const updateWeek    = (i, val)        => setWeeks(w => w.map((x, idx) => idx === i ? { ...x, topic: val } : x));
   const updateGrading = (i, field, val) => setGrading(g => g.map((x, idx) => idx === i ? { ...x, [field]: val } : x));
 
+  // Package all the state back into a clean object and send it to the parent component
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return;
+    
     onSave({
-      title, courseName,
+      title, 
+      courseName,
       quarter: `${season} ${year}`,
       color,
       syllabus: { lectureTime, location, officeHours, units, email, description, weeks, grading },
@@ -96,7 +119,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
     onClose();
   };
 
-  // Step indicator
+  // UI mapping for the top progress indicator
   const STEPS = [ 
     { n: 1, label: 'Basics',   icon: <SchoolIcon style={{ fontSize: 16 }}/> },
     { n: 2, label: 'Details',  icon: <MenuBookIcon style={{ fontSize: 16 }}/> },
@@ -107,13 +130,14 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-content--wide" onClick={e => e.stopPropagation()}>
 
-        {/* Step indicator which renders the clickable step dots at the top of page*/}
+        {/* Step indicator which renders the clickable step dots at the top of page */}
         <div className="modal-steps">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.n}>
               <div
                 className={`modal-step ${step === s.n ? 'active' : step > s.n ? 'done' : ''}`}
                 style={{ '--step-color': color }}
+                // Allow users to jump backwards by clicking previous dots
                 onClick={() => step > s.n && setStep(s.n)}
               >
                 <div className="modal-step-dot">
@@ -121,6 +145,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
                 </div>
                 <span className="modal-step-label">{s.label}</span>
               </div>
+              {/* Draw the connecting line between dots, except after the last dot */}
               {i < STEPS.length - 1 && (
                 <div className="modal-step-line" style={{ background: step > s.n ? color : '#e8eaf0' }}/>
               )}
@@ -164,6 +189,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
                       className={`modal-swatch ${color === c ? 'selected' : ''}`}
                       style={{ background: c }}/>
                   ))}
+                  {/* Allow custom hex inputs if the standard palette isn't enough */}
                   <input type="color" value={color} onChange={e => setColor(e.target.value)}
                     className="modal-color-custom" title="Custom color"/>
                 </div>
@@ -179,7 +205,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
             </>
           )}
 
-          {/* ── STEP 2: Syllabus Details collects the lecture time, locaiton, office hours, units, contrat email, and descriptions ── */}
+          {/* ── STEP 2: Syllabus Details ── collects the lecture time, location, office hours, units, contact email, and descriptions */}
           {step === 2 && (
             <>
               <div className="modal-grid-2">
@@ -227,10 +253,10 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
             </>
           )}
 
-          {/* ── STEP 3: Schedule + Grading ── */}
+          {/* ── STEP 3: Schedule + Grading ── dynamically updating arrays */}
           {step === 3 && (
             <>
-              {/* Weekly schedule */}
+              {/* Weekly schedule builder */}
               <div className="modal-field">
                 <div className="modal-form-label-text"><ViewWeekIcon style={{ fontSize: 15 }}/> Weekly Schedule</div>
                 <div className="modal-week-list">
@@ -245,7 +271,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
                 </div>
               </div>
 
-              {/* Grading breakdown */}
+              {/* Grading breakdown builder */}
               <div className="modal-field">
                 <div className="modal-grading-header">
                   <div className="modal-form-label-text"><GradeIcon style={{ fontSize: 15 }}/> Grading Breakdown</div>
@@ -268,6 +294,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
                       <input className="modal-input" style={{ margin: 0 }} value={g.weight}
                         onChange={e => updateGrading(i, 'weight', e.target.value)}
                         placeholder="e.g. 30%"/>
+                      {/* Allow users to remove categories they don't need */}
                       <button type="button" onClick={() => setGrading(g => g.filter((_, idx) => idx !== i))}
                         className="modal-delete-row-btn">
                         <DeleteIcon style={{ fontSize: 16 }}/>

@@ -1,19 +1,21 @@
 // src/class_page/AddStudentsModal.jsx
 
 import React, { useState } from 'react';
+import { api } from '../../utils/api';
 import './ClassPageModal.css';
 
 const AddStudentsModal = ({ isOpen, onClose, classId }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
-  if (!isOpen) return null; //a performance guard: render nothing if modal is not open
+  if (!isOpen) return null; // a performance guard: render nothing if modal is not open
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // search for Students via email, specifically, connects to the backend to look up a user by email before adding them
-      const searchRes = await fetch(`http://localhost:5001/api/auth/user?email=${email}`);
+      // Search for Students via email. Specifically, connects to the backend to look up a user by email before adding them.
+      // We use api.get here to automatically include the auth token.
+      const searchRes = await api.get(`/api/auth/user?email=${email}`);
       const userData = await searchRes.json();
   
       if (!userData._id) {
@@ -21,11 +23,9 @@ const AddStudentsModal = ({ isOpen, onClose, classId }) => {
         return;
       }
   
-      // Add the found student to this class by their MongoDB _id
-      const res = await fetch(`http://localhost:5001/api/classes/${classId}/students`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: userData._id }),
+      // Add the found student to this class by their MongoDB _id using api.post
+      const res = await api.post(`/api/classes/${classId}/students`, { 
+        studentId: userData._id 
       });
   
       if (res.ok) {
@@ -37,7 +37,8 @@ const AddStudentsModal = ({ isOpen, onClose, classId }) => {
     } catch (err) {
       console.error('Failed to add student:', err);
     }
-    //reset form fields and close modal regardless of the outcome 
+    
+    // reset form fields and close modal regardless of the outcome 
     setName('');
     setEmail('');
     onClose();

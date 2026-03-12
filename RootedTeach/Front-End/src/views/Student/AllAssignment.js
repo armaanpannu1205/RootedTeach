@@ -1,15 +1,20 @@
+/* AllAssignment.js - A global view showing all assignments across every enrolled course. */
+/* Currently uses hardcoded sample data as a placeholder until the API integration is complete. */
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
 import './StudentDashboard.css';
 import './AllAssignment.css';
 
+// Fallback dummy data for courses
 const SAMPLE_COURSES = [
   { id: 'cs35l',   code: 'CS 35L',   name: 'Software Construction',                    prof: 'Eggert',  color: 0, assignments: 3, upcoming: 1 },
   { id: 'math161', code: 'MATH 161', name: 'Applied Numerical Methods',                 prof: 'Clifton', color: 1, assignments: 5, upcoming: 2 },
   { id: 'cs180',   code: 'CS 180',   name: 'Introduction to Algorithms and Complexity', prof: 'Park',    color: 2, assignments: 2, upcoming: 0 },
 ];
 
+// Hardcoded assignment database for testing the UI filters and layout
 const ALL_ASSIGNMENTS = [
     { id: 101, courseId: 'cs35l',   courseCode: 'CS 35L',   title: 'Assignment 1',       due: '2025-11-05 23:59', points: 100, status: 'submitted', type: 'Submit the file' },
     { id: 102, courseId: 'cs35l',   courseCode: 'CS 35L',   title: 'Assignment 2',       due: '2025-11-19 23:59', points: 100, status: 'submitted', type: 'Submit the file' },
@@ -25,13 +30,14 @@ const ALL_ASSIGNMENTS = [
     { id: 302, courseId: 'cs180',   courseCode: 'CS 180',   title: 'Project Checkpoint', due: '2025-11-20 23:59', points: 100, status: 'pending',   type: 'Submit the file' },
   ];
 
+// Lookup table to quickly map an assignment to its parent course details
 const COURSE_BY_ID = {
     'cs35l':   { id: 'cs35l',   code: 'CS 35L',   name: 'Software Construction',                    prof: 'Eggert',  color: 0 },
     'math161': { id: 'math161', code: 'MATH 161', name: 'Applied Numerical Methods',                 prof: 'Clifton', color: 1 },
     'cs180':   { id: 'cs180',   code: 'CS 180',   name: 'Introduction to Algorithms and Complexity', prof: 'Park',    color: 2 },
   };
 
-// return a simple deadline label based on the due date
+// Utility to calculate remaining time and return a human-readable badge label
 function getDaysLeft(due) {
   const d = new Date(due) - new Date();
   const days = Math.ceil(d / 86400000);
@@ -42,37 +48,42 @@ function getDaysLeft(due) {
 
 function AllAssignment() {
   const navigate = useNavigate();
-  // load saved courses or use sample data
+  
+  // Try to hydrate course list from localStorage, fallback to dummy data if empty
   const [courses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('courses')) || SAMPLE_COURSES; }
     catch { return SAMPLE_COURSES; }
   });
 
+  // Track active filters for the UI
   const [filter, setFilter] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState('all');
 
-  // apply status and course filters
+  // Dual-filtering system: check both the completion status AND the specific course selected
   const filtered = ALL_ASSIGNMENTS.filter(a => {
     const statusOk = filter === 'all' || a.status === filter;
     const courseOk = selectedCourse === 'all' || a.courseId === selectedCourse;
     return statusOk && courseOk;
   });
 
+  // Derived state for quick summary numbers
   const pendingCount   = ALL_ASSIGNMENTS.filter(a => a.status === 'pending').length;
   const submittedCount = ALL_ASSIGNMENTS.filter(a => a.status === 'submitted').length;
 
-  // store selected assignment info before navigating
+  // Handles clicking an assignment card
   function openAssignment(a) {
+    // We must prepopulate localStorage so the AssignmentDashboard knows which context to load
     const course = COURSE_BY_ID[a.courseId];
     if (course) {
       localStorage.setItem('currentCourse', JSON.stringify(course));
     }
     localStorage.setItem('selectedAssignmentId', String(a.id));
-    navigate('/assignment');
+    navigate('/assignment'); // Let the router take over
   }
 
   return (
     <div className="app-layout">
+      {/* Main sidebar navigation */}
       <Sidebar courses={courses} activePage="assignments" />
 
       <div className="main">
@@ -85,7 +96,7 @@ function AllAssignment() {
           </div>
         </div>
 
-        {/* assignment summary cards */}
+        {/* High-level summary metric cards */}
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-val">{ALL_ASSIGNMENTS.length}</div>
@@ -101,8 +112,9 @@ function AllAssignment() {
           </div>
         </div>
 
-        {/* filter buttons */}
+        {/* Global UI controls for filtering the assignment list */}
         <div className="aa-filters">
+          {/* Status filters (All / Pending / Submitted) */}
           <div className="aa-filter-group">
             {['all', 'pending', 'submitted'].map(f => (
               <button
@@ -113,6 +125,8 @@ function AllAssignment() {
               </button>
             ))}
           </div>
+          
+          {/* Course-specific filter chips */}
           <div className="aa-filter-group">
             <button
               className={`aa-filter-btn ${selectedCourse === 'all' ? 'active' : ''}`}
@@ -124,6 +138,7 @@ function AllAssignment() {
                 key={c.id}
                 className={`aa-filter-btn ${selectedCourse === c.id ? 'active' : ''}`}
                 onClick={() => setSelectedCourse(c.id)}
+                // Inject the dynamic course theme color if it's currently selected
                 style={selectedCourse === c.id ? {
                   background: COURSE_COLORS[c.color % COURSE_COLORS.length].accent,
                   borderColor: 'transparent',
@@ -136,6 +151,7 @@ function AllAssignment() {
           </div>
         </div>
 
+        {/* Render the actual filtered list of assignments */}
         <div className="aa-list">
           {filtered.length === 0 && (
             <div className="aa-empty">
@@ -144,6 +160,7 @@ function AllAssignment() {
             </div>
           )}
           {filtered.map(a => {
+            // Figure out styling rules for this specific row
             const course = courses.find(c => c.id === a.courseId);
             const accent = course ? COURSE_COLORS[course.color % COURSE_COLORS.length].accent : '#e07a5f';
             const daysLeft = getDaysLeft(a.due);

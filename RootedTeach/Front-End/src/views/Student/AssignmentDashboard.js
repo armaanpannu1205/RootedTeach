@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
+import { api } from '../../utils/api';
 import './AssignmentDashboard.css';
 
 // MUI Icons
@@ -56,7 +57,7 @@ function AssignmentDashboard() {
       const classId = course.id || course._id;
       if (!classId) { setLoading(false); return; }
       try {
-        const res  = await fetch(`http://localhost:5001/api/assignments/class/${classId}`);
+        const res  = await api.get(`/api/assignments/class/${classId}`);
         const data = await res.json();
         const mapped = data.map(a => {
           const submission = a.submissions?.find(s => s.student?._id === studentId || s.student === studentId);
@@ -104,9 +105,12 @@ function AssignmentDashboard() {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('studentId', studentId);
-      const res    = await fetch(`http://localhost:5001/api/assignments/${currentSel.id}/submit`, { method: 'POST', body: fd });
+      
+      const res    = await api.post(`/api/assignments/${currentSel.id}/submit`, fd);
       const result = await res.json();
+      
       if (!res.ok) { setToast(result.message || 'Submission failed'); setTimeout(() => setToast(''), 4000); return; }
+      
       const now = new Date().toLocaleString();
       setAssignments(prev => prev.map(a =>
         a.id === currentSel.id ? { ...a, status: 'submitted', submittedFile: file.name, submittedAt: now, aiScore: result.aiScore } : a

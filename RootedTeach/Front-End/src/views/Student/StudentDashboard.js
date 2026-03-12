@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
+import { api } from '../../utils/api';
 import './StudentDashboard.css';
-
-const BASE = 'http://localhost:5001';
-
-//attach auth token when available
-function authFetch(path, opts = {}) {
-  const token = localStorage.getItem('token');
-  return fetch(`${BASE}${path}`, {
-    ...opts,
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(opts.headers || {}) },
-  });
-}
 
 function StudentDashboard() {
   const navigate = useNavigate();
@@ -29,14 +19,14 @@ function StudentDashboard() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res  = await authFetch(`/api/classes/student/${studentId}`);
+        const res  = await api.get(`/api/classes/student/${studentId}`);
         const data = await res.json();
         const classList = Array.isArray(data) ? data : [];
 
         // Fetch real assignment counts for each class
         const enriched = await Promise.all(classList.map(async c => {
           try {
-            const aRes  = await authFetch(`/api/assignments/class/${c.id || c._id}`);
+            const aRes  = await api.get(`/api/assignments/class/${c.id || c._id}`);
             const aData = await aRes.json();
             const list  = Array.isArray(aData) ? aData : [];
             const now   = new Date();
@@ -53,7 +43,7 @@ function StudentDashboard() {
         setLoading(false);
       }
     };
-    fetchCourses();
+    if (studentId) fetchCourses();
   }, [studentId]);
 
   // keep courses cached locally
@@ -64,15 +54,13 @@ function StudentDashboard() {
     if (!trimmed) return;
     setJoining(true); setJoinError('');
     try {
-      const res  = await authFetch('/api/classes/join', {
-        method: 'POST',
-        body: JSON.stringify({ classCode: trimmed, studentId }),
-      });
+      // api.post なら JSON.stringify や method の指定も不要！
+      const res  = await api.post('/api/classes/join', { classCode: trimmed, studentId });
       const data = await res.json();
       if (!res.ok) { setJoinError(data.message || 'Failed to join class.'); return; }
       // Enrich new class with assignment counts
       try {
-        const aRes  = await authFetch(`/api/assignments/class/${data.class.id || data.class._id}`);
+        const aRes  = await api.get(`/api/assignments/class/${data.class.id || data.class._id}`);
         const aData = await aRes.json();
         const list  = Array.isArray(aData) ? aData : [];
         const now   = new Date();
@@ -91,11 +79,7 @@ function StudentDashboard() {
   async function deleteCourse(classId) {
     const studentId = localStorage.getItem('userId');
     try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5001/api/classes/${classId}/students/${studentId}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      await api.del(`/api/classes/${classId}/students/${studentId}`);
     } catch (e) { console.error(e); }
     setCourses(prev => prev.filter(c => (c.id || c._id) !== classId));
     setDeleteTarget(null);

@@ -12,6 +12,7 @@ import {
 import { Visibility, VisibilityOff, Email, Lock, Person, School, MenuBook } from "@mui/icons-material";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { initializeApp, getApps } from "firebase/app";
+import { api } from "../../utils/api";
 
 // Firebase setup - only used for the Google popup flow
 const firebaseConfig = {
@@ -77,13 +78,10 @@ export default function CreateAccount() {
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: `${firstName.trim()} ${lastName.trim()}`,
-          email, password, role,
-        }),
+      // Switched to api.post helper
+      const res = await api.post('/api/auth/register', {
+        username: `${firstName.trim()} ${lastName.trim()}`,
+        email, password, role,
       });
       const data = await res.json();
       if (res.ok) {
@@ -109,12 +107,8 @@ export default function CreateAccount() {
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      // 2. Send token and role to our backend for DB storage
-      const res = await fetch("http://localhost:5001/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken, role }),
-      });
+      // 2. Send token and role to our backend for DB storage using api helper
+      const res = await api.post("/api/auth/google", { idToken, role });
 
       const data = await res.json();
       if (res.ok) {
@@ -183,14 +177,14 @@ export default function CreateAccount() {
 
         {/* Basic info fields */}
         <Grid container spacing={1.5}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label="First Name" fullWidth required value={firstName}
               onChange={(e) => setFirstName(e.target.value)} placeholder="John"
               InputProps={{ startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> }}
               sx={inputSx}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label="Last Name" fullWidth required value={lastName}
               onChange={(e) => setLastName(e.target.value)} placeholder="Doe"
               InputProps={{ startAdornment: <InputAdornment position="start"><Person fontSize="small" /></InputAdornment> }}
@@ -206,7 +200,7 @@ export default function CreateAccount() {
         />
 
         <Grid container spacing={1.5}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label="Password" type={showPw ? "text" : "password"} fullWidth required
               value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 6 characters"
               InputProps={{
@@ -222,7 +216,7 @@ export default function CreateAccount() {
               sx={inputSx}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label="Confirm Password" type={showConfirm ? "text" : "password"} fullWidth required
               value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} placeholder="Repeat password"
               InputProps={{

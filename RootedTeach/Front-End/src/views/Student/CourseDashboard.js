@@ -1,9 +1,13 @@
+/* CourseDashboard.js - Main dashboard for students viewing a specific class. */
+/* Handles switching between Assignments, Grades, Syllabus, Announcements, and Search. */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
+import { api } from '../../utils/api';
 import './CourseDashboard.css';
 
-// MUI Icons
+// MUI Icons for all the UI sugar
 import MenuBookIcon           from '@mui/icons-material/MenuBook';
 import GradeIcon              from '@mui/icons-material/Grade';
 import AssignmentIcon         from '@mui/icons-material/Assignment';
@@ -27,20 +31,7 @@ import PeopleIcon             from '@mui/icons-material/People';
 import ViewWeekIcon           from '@mui/icons-material/ViewWeek';
 import CampaignIcon           from '@mui/icons-material/Campaign';
 
-const BASE = 'http://localhost:5001';
-
-function authHeaders() {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-async function apiFetch(path, opts = {}) {
-  return fetch(`${BASE}${path}`, {
-    ...opts,
-    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(opts.headers || {}) },
-  });
-}
-
+// Helper to format days remaining and color code it (red = past due, orange = soon)
 function getDaysLeft(due) {
   const days = Math.ceil((new Date(due) - new Date()) / 86400000);
   if (days < 0)  return { label: 'Past due',   color: '#e53e3e' };
@@ -49,6 +40,7 @@ function getDaysLeft(due) {
   return { label: `${days}d left`, color: 'var(--muted)' };
 }
 
+// Convert percentage to standard letter grades
 function letterGrade(pct) {
   if (pct >= 93) return { letter: 'A',  color: '#38a169' };
   if (pct >= 90) return { letter: 'A-', color: '#38a169' };
@@ -64,6 +56,7 @@ function letterGrade(pct) {
   return           { letter: 'F',  color: '#c53030' };
 }
 
+// UI styling for AI detection scores (red if high probability of AI)
 function aiMeta(score) {
   if (score == null) return null;
   if (score >= 70) return { color: '#e53e3e', bg: 'rgba(229,62,62,.1)' };
@@ -71,10 +64,11 @@ function aiMeta(score) {
   return                   { color: '#38a169', bg: 'rgba(56,161,105,.1)' };
 }
 
-// Shared assignment tile
+// Shared component for rendering individual assignments in lists/searches
 function AssignmentTile({ a, onClick }) {
   const ai = aiMeta(a.aiScore);
   const dl = a.dueDate ? getDaysLeft(a.dueDate) : null;
+  
   return (
     <div className="assignment-tile" onClick={() => onClick && onClick(a)}>
       <div className="tile-left">
@@ -90,6 +84,7 @@ function AssignmentTile({ a, onClick }) {
             {a.dueDate && <span className="tile-meta-chip"><CalendarTodayIcon style={{ fontSize: 12 }}/> {new Date(a.dueDate).toLocaleDateString()}</span>}
             <span className="tile-meta-chip"><EmojiEventsIcon style={{ fontSize: 12 }}/> {a.points} pts</span>
             {dl && a.status === 'pending' && <span className="tile-meta-chip" style={{ color: dl.color }}><AccessTimeIcon style={{ fontSize: 12 }}/> {dl.label}</span>}
+            {/* Show why this matched if it came from the search tab */}
             {a.matchedOn && <span className="tile-meta-chip" style={{ color: '#7269e0', background: 'rgba(114,105,224,.08)' }}><SearchIcon style={{ fontSize: 12 }}/> matched: {a.matchedOn}</span>}
           </div>
         </div>
@@ -109,7 +104,7 @@ function AssignmentTile({ a, onClick }) {
   );
 }
 
-// Search Tab
+// Sub-component: Search view
 function SearchTab({ classId, onOpen }) {
   const [query, setQuery]       = useState('');
   const [results, setResults]   = useState([]);
@@ -121,7 +116,8 @@ function SearchTab({ classId, onOpen }) {
     if (!query.trim()) return;
     setLoading(true); setError(''); setSearched(true);
     try {
-      const res = await apiFetch(`/api/assignments/search?q=${encodeURIComponent(query)}&classId=${classId}`);
+      // Use apiFetch helper
+      const res = await api.get(`/api/assignments/search?q=${encodeURIComponent(query)}&classId=${classId}`);
       const data = await res.json();
       if (!res.ok) { setError(data.message || 'Search failed'); setResults([]); }
       else setResults(data.results || []);
@@ -185,15 +181,16 @@ function SearchTab({ classId, onOpen }) {
   );
 }
 
-// Main
-// Announcements Tab
+// Sub-component: Announcements view
 function AnnouncementsTab({ classId, classInfo }) {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading]             = useState(true);
 
   useEffect(() => {
     if (!classId) { setLoading(false); return; }
-    apiFetch(`/api/classes/${classId}`)
+    
+    // Fetch via api wrapper
+    api.get(`/api/classes/${classId}`)
       .then(r => r.json())
       .then(data => setAnnouncements((data.announcements || []).slice().reverse()))
       .catch(console.error)
@@ -234,26 +231,33 @@ function AnnouncementsTab({ classId, classInfo }) {
   );
 }
 
+
+// MAIN DASHBOARD EXPORT
 export default function CourseDashboard() {
   const navigate  = useNavigate();
+  // Safe parsing in case localStorage data gets wiped or corrupted
   const course    = (() => { try { return JSON.parse(localStorage.getItem('currentCourse')) || {}; } catch { return {}; } })();
   const classId   = course.id || course._id;
   const studentId = localStorage.getItem('userId');
 
-  const [page, setPage]               = useState('assignments');
+  const [page, setPage]               = useState('assignments'); // controls which tab is active
   const [assignments, setAssignments] = useState([]);
   const [loadingA, setLoadingA]       = useState(true);
   const [classInfo, setClassInfo]     = useState(null);
 
+  // Jump to top when switching tabs to prevent weird scrolling states
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [page]);
 
-  // Fetch assignments
+  // Fetch assignments on load
   useEffect(() => {
     if (!classId) { setLoadingA(false); return; }
-    apiFetch(`/api/assignments/class/${classId}`)
+    
+    api.get(`/api/assignments/class/${classId}`)
       .then(r => r.json())
       .then(data => {
+        // Map the backend data into a cleaner structure for the UI
         setAssignments((Array.isArray(data) ? data : []).map(a => {
+          // Find this specific student's submission
           const sub = (a.submissions || []).find(s => s.student?._id === studentId || s.student === studentId);
           return {
             id: a.id || a._id,
@@ -270,28 +274,31 @@ export default function CourseDashboard() {
       .finally(() => setLoadingA(false));
   }, [classId, studentId]);
 
-  // Fetch class info (includes syllabus)
+  // Fetch class details (like syllabus and rules)
   useEffect(() => {
     if (!classId) return;
-    apiFetch(`/api/classes/${classId}`).then(r => r.json()).then(setClassInfo).catch(console.error);
+    api.get(`/api/classes/${classId}`).then(r => r.json()).then(setClassInfo).catch(console.error);
   }, [classId]);
 
   function openAssignment(a) {
     localStorage.setItem('selectedAssignmentId', String(a.id));
-    navigate('/assignment');
+    navigate('/assignment'); // Let the router handle the page switch
   }
 
+  // Calculate current running grade based on what has actually been graded
   const gradedItems = assignments.filter(a => a.grade != null);
   const earnedPts   = gradedItems.reduce((s, a) => s + a.grade, 0);
   const maxPts      = gradedItems.reduce((s, a) => s + a.points, 0);
   const currentPct  = maxPts > 0 ? Math.round((earnedPts / maxPts) * 100) : 0;
   const lg          = gradedItems.length > 0 ? letterGrade(currentPct) : null;
+  
   const submitted   = assignments.filter(a => a.status === 'submitted').length;
   const pending     = assignments.filter(a => a.status === 'pending').length;
 
   const info     = classInfo || course;
   const syllabus = info.syllabus || {};
 
+  // Build rows dynamically so we don't render empty UI elements if data is missing
   const infoRows = [
     { icon: <SchoolIcon style={{ fontSize: 16 }}/>,       label: 'Class Code',   val: info.classCode,              mono: true },
     { icon: <PersonIcon style={{ fontSize: 16 }}/>,       label: 'Professor',    val: info.teacher?.username },
@@ -306,10 +313,11 @@ export default function CourseDashboard() {
 
   return (
     <div className="app-layout">
+      {/* Sidebar handles navigation between tabs */}
       <Sidebar course={course} activePage={page} onPageChange={setPage}/>
       <div className="main">
 
-        {/* ASSIGNMENTS */}
+        {/* --- ASSIGNMENTS TAB --- */}
         {page === 'assignments' && (<>
           <div className="page-header">
             <h1><AssignmentIcon style={{ fontSize: 22 }}/> Assignments</h1>
@@ -322,7 +330,7 @@ export default function CourseDashboard() {
           </div>
         </>)}
 
-        {/* GRADES */}
+        {/* --- GRADES TAB --- */}
         {page === 'grade' && (<>
           <div className="page-header">
             <h1><GradeIcon style={{ fontSize: 22 }}/> Grades</h1>
@@ -331,6 +339,7 @@ export default function CourseDashboard() {
 
           <div className="section-card grade-summary">
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              {/* Big letter grade circle */}
               <div className="grade-circle" style={{ background: lg ? `${lg.color}18` : '#f4f4f8' }}>
                 {lg ? <span style={{ fontSize: 26, fontWeight: 900, color: lg.color }}>{lg.letter}</span>
                      : <GradeIcon style={{ fontSize: 30, color: '#ccc' }}/>}
@@ -345,6 +354,8 @@ export default function CourseDashboard() {
                 </div>
               </div>
             </div>
+            
+            {/* Visual progress bar based on how many assignments have been graded */}
             {assignments.length > 0 && (
               <div style={{ marginTop: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>
@@ -393,14 +404,14 @@ export default function CourseDashboard() {
           </div>
         </>)}
 
-        {/* SYLLABUS — real data from Firebase */}
+        {/* --- SYLLABUS TAB --- */}
         {page === 'syllabus' && (<>
           <div className="page-header">
             <h1><MenuBookIcon style={{ fontSize: 22 }}/> Syllabus</h1>
             <p>{info.className || info.name}</p>
           </div>
 
-          {/* Class info */}
+          {/* Class info grid */}
           <div className="section-card">
             <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><SchoolIcon style={{ fontSize: 20 }}/> Class Information</h3>
             {syllabus.description && (
@@ -423,7 +434,7 @@ export default function CourseDashboard() {
             }
           </div>
 
-          {/* Grading breakdown */}
+          {/* Grading breakdown table */}
           {syllabus.grading?.some(g => g.category && g.weight) && (
             <div className="section-card">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><TrendingUpIcon style={{ fontSize: 20 }}/> Grading Breakdown</h3>
@@ -431,7 +442,7 @@ export default function CourseDashboard() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '8px 16px', background: '#f8f9ff', fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '.5px' }}>
                   <span>Category</span><span>Weight</span>
                 </div>
-                {syllabus.grading.filter(g => g.category && g.weight).map((g, i, arr) => (
+                {syllabus.grading.filter(g => g.category && g.weight).map((g, i) => (
                   <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '12px 16px', borderTop: '1px solid #f0f0f6', background: i % 2 === 0 ? '#fff' : '#fafbff', alignItems: 'center' }}>
                     <span style={{ fontWeight: 500 }}>{g.category}</span>
                     <span style={{ fontWeight: 700, color: '#7269e0', fontSize: 15 }}>{g.weight}</span>
@@ -441,7 +452,7 @@ export default function CourseDashboard() {
             </div>
           )}
 
-          {/* Weekly schedule */}
+          {/* Weekly schedule list */}
           {syllabus.weeks?.some(w => w.topic) && (
             <div className="section-card">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}><ViewWeekIcon style={{ fontSize: 20 }}/> Weekly Schedule</h3>
@@ -456,7 +467,7 @@ export default function CourseDashboard() {
             </div>
           )}
 
-          {/* No syllabus at all */}
+          {/* Fallback if syllabus data is entirely empty */}
           {!syllabus.description && infoRows.length === 0 && !syllabus.grading?.some(g => g.category) && !syllabus.weeks?.some(w => w.topic) && (
             <div className="section-card">
               <div className="empty-state"><MenuBookIcon style={{ fontSize: 44, opacity: .2 }}/>No syllabus posted yet.<span style={{ fontSize: 13 }}>Your professor hasn't added syllabus details yet.</span></div>
@@ -464,10 +475,10 @@ export default function CourseDashboard() {
           )}
         </>)}
 
-        {/* SEARCH */}
+        {/* --- SEARCH TAB --- */}
         {page === 'search' && <SearchTab classId={classId} onOpen={openAssignment}/>}
 
-        {/* ANNOUNCEMENTS */}
+        {/* --- ANNOUNCEMENTS TAB --- */}
         {page === 'announcements' && (
           <AnnouncementsTab classId={classId} classInfo={classInfo}/>
         )}

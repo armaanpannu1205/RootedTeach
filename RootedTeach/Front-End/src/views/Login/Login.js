@@ -10,6 +10,7 @@ import {
 import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { initializeApp, getApps } from "firebase/app";
+import { api } from "../../utils/api";
 
 // Firebase config using environment variables for security
 const firebaseConfig = {
@@ -56,11 +57,8 @@ export default function LoginPage() {
     setErrorMsg("");
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5001/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      // Switched to api.post helper
+      const res = await api.post('/api/auth/login', { email, password });
       const data = await res.json();
       if (res.ok) {
         // Persist session info to local storage
@@ -92,12 +90,8 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      // Step 2: Verify the token on our server and get our own JWT back
-      const res = await fetch("http://localhost:5001/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
+      // Step 2: Verify the token on our server and get our own JWT back using api helper
+      const res = await api.post("/api/auth/google", { idToken });
 
       const data = await res.json();
       if (res.ok) {
