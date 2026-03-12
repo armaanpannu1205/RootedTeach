@@ -13,9 +13,13 @@ function Teacher() {
 
   useEffect(() => {
     const fetchClasses = async () => {
-      const res = await fetch('http://localhost:5001/api/classes');
+      const teacherId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5001/api/classes/teacher/${teacherId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
-      setClasses(data);
+      setClasses(Array.isArray(data) ? data : []);
     };
     fetchClasses();
   }, []);
@@ -50,8 +54,17 @@ function Teacher() {
     setEditingIndex(null);
   };
 
-  const handleDelete = (index) => {
-    setClasses((prev) => prev.filter((_, i) => i !== index));
+  const handleDelete = async (classId) => {
+    if (!classId) { console.error('No classId to delete'); return; }
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5001/api/classes/${classId}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      console.log('Delete response:', res.status);
+    } catch (e) { console.error('Delete failed:', e); }
+    setClasses((prev) => prev.filter(c => (c.id || c._id) !== classId));
   };
 
   const handleEdit = (index) => {
@@ -121,7 +134,7 @@ function Teacher() {
                   color={cls.color}
                   classId={cls.id}
                   classCode={cls.classCode}
-                  onDelete={() => handleDelete(index)}
+                  onDelete={() => handleDelete(cls.id || cls._id)}
                   onEdit={() => handleEdit(index)}
                 />
               ))}

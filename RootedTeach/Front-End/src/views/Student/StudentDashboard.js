@@ -85,6 +85,14 @@ function StudentDashboard() {
   }
 
   async function deleteCourse(classId) {
+    const studentId = localStorage.getItem('userId');
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:5001/api/classes/${classId}/students/${studentId}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch (e) { console.error(e); }
     setCourses(prev => prev.filter(c => (c.id || c._id) !== classId));
     setDeleteTarget(null);
     setToast('Class removed from dashboard');

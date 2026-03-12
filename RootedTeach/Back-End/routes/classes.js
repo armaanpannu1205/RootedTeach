@@ -101,6 +101,36 @@ router.put('/:id', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
+// ── DELETE /:id/students/:studentId — student leaves class ──────────────
+router.delete('/:id/students/:studentId', async (req, res) => {
+  try {
+    const classRef = db.collection('classes').doc(req.params.id);
+    const classDoc = await classRef.get();
+    if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
+    const students = (classDoc.data().students || []).filter(s => s !== req.params.studentId);
+    await classRef.update({ students });
+    res.json({ message: 'Left class successfully' });
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
+});
+
+// ── DELETE /:id — delete class + all its assignments ────────────────────
+router.delete('/:id', async (req, res) => {
+  try {
+    const classRef = db.collection('classes').doc(req.params.id);
+    const classDoc = await classRef.get();
+    if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
+
+    // Batch delete all assignments for this class
+    const assignments = await db.collection('assignments').where('class', '==', req.params.id).get();
+    const batch = db.batch();
+    assignments.docs.forEach(doc => batch.delete(doc.ref));
+    batch.delete(classRef);
+    await batch.commit();
+
+    res.json({ message: 'Class and assignments deleted' });
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
+});
+
 // ── POST /:id/announcements — post announcement ──────────────────────────
 router.post('/:id/announcements', async (req, res) => {
   try {
