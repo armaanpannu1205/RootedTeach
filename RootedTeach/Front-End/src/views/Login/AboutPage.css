@@ -1,5 +1,9 @@
+/* AboutPage.css - Styles for the About Page for this website: RootedTeach. */
+/* This page is explaining the mission and vision of the app. */
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 
+/* Base styles for the About page */
 .about-container {
   min-height: 100vh;
   background-image: url('https://i.imgur.com/YrZFSSN.jpg');
@@ -42,6 +46,7 @@
   margin-bottom: 28px;
 }
 
+/* Title with gradient accent */
 .about-title {
   font-family: 'DM Serif Display', serif;
   font-size: 3.2rem;
@@ -59,6 +64,7 @@
   background-clip: text;
 }
 
+/* Lead sentence */
 .about-lead {
   font-family: 'DM Sans', sans-serif;
   font-size: 1.15rem;
@@ -68,6 +74,7 @@
   line-height: 1.6;
 }
 
+/* Showrt divider */
 .about-divider {
   width: 48px;
   height: 2px;
@@ -76,6 +83,7 @@
   margin-bottom: 32px;
 }
 
+/* Body text */
 .about-body {
   display: flex;
   flex-direction: column;
@@ -92,6 +100,7 @@
   font-weight: 300;
 }
 
+/* About footer stats */
 .about-stats {
   display: flex;
   gap: 40px;

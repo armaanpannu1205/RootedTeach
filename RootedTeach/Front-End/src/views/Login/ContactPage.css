@@ -1,3 +1,6 @@
+/* ContactPage.css - Layout and styling for the contact section. */
+/* Using a dark theme with some glassmorphism and smooth bg animations. */
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 
 .contact-container {
@@ -5,6 +8,7 @@
   background-image: url('https://i.imgur.com/YrZFSSN.jpg');
   background-size: cover;
   background-repeat: repeat;
+  /* Making the background move slowly to give it some life */
   animation: moveBg 40s linear infinite;
   display: flex;
   align-items: center;
@@ -12,6 +16,7 @@
   padding: 80px 24px;
 }
 
+/* Loop the background position for the scrolling effect */
 @keyframes moveBg {
   0% { background-position: 0 0; }
   100% { background-position: 1000px 0; }
@@ -20,6 +25,7 @@
 .contact-content {
   max-width: 620px;
   width: 100%;
+  /* Dark semi-transparent blue for that glass effect */
   background: rgba(0, 1, 26, 0.82);
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -28,6 +34,7 @@
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
 }
 
+/* Small blue badge at the top */
 .contact-tag {
   display: inline-block;
   font-family: 'DM Sans', sans-serif;
@@ -52,6 +59,7 @@
   letter-spacing: -0.5px;
 }
 
+/* Subtext under the title - kept it low contrast for a clean look */
 .contact-lead {
   font-family: 'DM Sans', sans-serif;
   font-size: 1rem;
@@ -61,6 +69,7 @@
   line-height: 1.7;
 }
 
+/* Short blue-to-purple line */
 .contact-divider {
   width: 48px;
   height: 2px;
@@ -76,6 +85,7 @@
   margin-bottom: 32px;
 }
 
+/* Individual contact rows (email, etc.) */
 .contact-card {
   display: flex;
   align-items: center;
@@ -87,6 +97,7 @@
   transition: border-color 0.2s, background 0.2s;
 }
 
+/* Slight glow on hover */
 .contact-card:hover {
   border-color: rgba(79, 172, 254, 0.25);
   background: rgba(79, 172, 254, 0.05);
@@ -127,6 +138,7 @@
   font-weight: 400;
 }
 
+/* Minimalist copy button for the email address */
 .contact-copy-btn {
   margin-top: 8px;
   background: none;
@@ -147,6 +159,7 @@
   border-color: rgba(79, 172, 254, 0.6);
 }
 
+/* Small footer note inside the card */
 .contact-note {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.8rem;
@@ -157,6 +170,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* Adjustments for smaller screens (phones) */
 @media (max-width: 600px) {
   .contact-content {
     padding: 40px 28px;

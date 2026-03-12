@@ -1,3 +1,6 @@
+/* HomePage.css - Styling for Login and Signup views. */
+/* Using Inter for a more modern, techy look compared to the About page. */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
 
 html, body {
@@ -9,9 +12,7 @@ html, body {
   box-sizing: border-box;
 }
 
-/* ════════════════════════════
-   BACKGROUND
-════════════════════════════ */
+/* Background setup with the same scrolling effect as other pages */
 .home-container {
   display: flex;
   flex-direction: column;
@@ -34,9 +35,7 @@ html, body {
   100% { background-position: 1000px 0; }
 }
 
-/* ════════════════════════════
-   SHARED FIELD STYLES
-════════════════════════════ */
+/* Form field layout: Label on top of input */
 .field-group {
   display: flex;
   flex-direction: column;
@@ -53,6 +52,7 @@ html, body {
   letter-spacing: 0.8px;
 }
 
+/* Subtle dark input look to fit the theme */
 .field-group input {
   padding: 12px 14px;
   font-size: 0.95rem;
@@ -70,6 +70,7 @@ html, body {
   color: rgba(255, 255, 255, 0.28);
 }
 
+/* Blue focus ring for better accessibility */
 .field-group input:focus {
   border-color: #6ea8ff;
   box-shadow: 0 0 0 3px rgba(110, 168, 255, 0.15);
@@ -82,6 +83,7 @@ html, body {
   width: 100%;
 }
 
+/* Needed to position the password toggle icon inside the input */
 .input-wrapper {
   position: relative;
   width: 100%;
@@ -91,6 +93,7 @@ html, body {
   padding-right: 40px;
 }
 
+/* Eye icon for showing/hiding password */
 .toggle-password {
   position: absolute;
   top: 50%;
@@ -108,11 +111,10 @@ html, body {
 
 .toggle-password:hover { opacity: 1; }
 
+/* Red asterisk for required fields */
 .req { color: #fc8181; margin-left: 2px; }
 
-/* ════════════════════════════
-   LOGIN FORM
-════════════════════════════ */
+/* Glassmorphism card for the login form */
 .login-form {
   gap: 16px;
   display: flex;
@@ -158,9 +160,7 @@ html, body {
   color: rgba(255,255,255,0.4);
 }
 
-/* ════════════════════════════
-   REGISTER FORM
-════════════════════════════ */
+/* Register form is slightly wider to handle the two-column grid */
 .register-form {
   gap: 16px;
   display: flex;
@@ -176,6 +176,7 @@ html, body {
   backdrop-filter: blur(12px);
 }
 
+/* Similar header style to keep things consistent */
 .register-header {
   display: flex;
   flex-direction: column;
@@ -199,22 +200,7 @@ html, body {
   box-shadow: 0 4px 16px rgba(4, 97, 204, 0.4);
 }
 
-.register-form h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-}
-
-.register-subtitle {
-  margin: 0;
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.4);
-}
-
-/* ════════════════════════════
-   ROLE TOGGLE
-════════════════════════════ */
+/* Role toggle - Student vs Teacher button group */
 .role-toggle {
   display: flex;
   gap: 8px;
@@ -243,6 +229,7 @@ html, body {
   gap: 6px;
 }
 
+/* Active role with the signature blue gradient */
 .role-option.active {
   background: linear-gradient(135deg, #0461cc, #2b1775);
   color: white;
@@ -254,11 +241,7 @@ html, body {
   background: rgba(255,255,255,0.05);
 }
 
-.role-icon { font-size: 1rem; }
-
-/* ════════════════════════════
-   PASSWORD STRENGTH
-════════════════════════════ */
+/* Feedback for password complexity */
 .password-strength {
   display: flex;
   align-items: center;
@@ -273,6 +256,7 @@ html, body {
   transition: background 0.3s, width 0.3s;
 }
 
+/* Dynamic colors for the strength meter */
 .strength-bar.weak   { background: #fc8181; width: 30%; }
 .strength-bar.medium { background: #f6ad55; width: 65%; }
 .strength-bar.strong { background: #68d391; width: 100%; }
@@ -283,9 +267,7 @@ html, body {
   white-space: nowrap;
 }
 
-/* ════════════════════════════
-   MESSAGES
-════════════════════════════ */
+/* Alert styles for form errors or success messages */
 .form-message {
   width: 100%;
   font-size: 0.83rem;
@@ -306,9 +288,7 @@ html, body {
   border: 1px solid rgba(104, 211, 145, 0.25);
 }
 
-/* ════════════════════════════
-   SUBMIT BUTTON
-════════════════════════════ */
+/* Primary CTA button style */
 .submit-btn {
   font-size: 1rem;
   border-radius: 10px;
@@ -336,14 +316,12 @@ html, body {
   transform: translateY(-1px);
 }
 
-.submit-btn:active:not(:disabled) { transform: translateY(0); }
-
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Loading spinner */
+/* Rotation for the loading state */
 .spinner {
   width: 18px;
   height: 18px;
@@ -358,9 +336,6 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
-/* ════════════════════════════
-   FOOTER LINK
-════════════════════════════ */
 .form-footer {
   font-size: 0.83rem;
   color: rgba(255, 255, 255, 0.4);
@@ -374,14 +349,7 @@ html, body {
   transition: opacity 0.2s;
 }
 
-.link-text:hover {
-  opacity: 0.75;
-  text-decoration: underline;
-}
-
-/* ════════════════════════════
-   RESPONSIVE
-════════════════════════════ */
+/* Stack inputs on small mobile screens */
 @media (max-width: 650px) {
   .login-form, .register-form {
     padding: 36px 24px;

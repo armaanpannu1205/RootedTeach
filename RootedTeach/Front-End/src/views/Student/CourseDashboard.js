@@ -71,7 +71,7 @@ function aiMeta(score) {
   return                   { color: '#38a169', bg: 'rgba(56,161,105,.1)' };
 }
 
-// ── Shared assignment tile ──────────────────────────────────────────────────
+// Shared assignment tile
 function AssignmentTile({ a, onClick }) {
   const ai = aiMeta(a.aiScore);
   const dl = a.dueDate ? getDaysLeft(a.dueDate) : null;
@@ -109,7 +109,7 @@ function AssignmentTile({ a, onClick }) {
   );
 }
 
-// ── Search Tab ──────────────────────────────────────────────────────────────
+// Search Tab
 function SearchTab({ classId, onOpen }) {
   const [query, setQuery]       = useState('');
   const [results, setResults]   = useState([]);
@@ -185,8 +185,8 @@ function SearchTab({ classId, onOpen }) {
   );
 }
 
-// ── Main ────────────────────────────────────────────────────────────────────
-// ── Announcements Tab ──────────────────────────────────────────────────────
+// Main
+// Announcements Tab
 function AnnouncementsTab({ classId, classInfo }) {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading]             = useState(true);
@@ -309,7 +309,7 @@ export default function CourseDashboard() {
       <Sidebar course={course} activePage={page} onPageChange={setPage}/>
       <div className="main">
 
-        {/* ── ASSIGNMENTS ── */}
+        {/* ASSIGNMENTS */}
         {page === 'assignments' && (<>
           <div className="page-header">
             <h1><AssignmentIcon style={{ fontSize: 22 }}/> Assignments</h1>
@@ -322,7 +322,7 @@ export default function CourseDashboard() {
           </div>
         </>)}
 
-        {/* ── GRADES ── */}
+        {/* GRADES */}
         {page === 'grade' && (<>
           <div className="page-header">
             <h1><GradeIcon style={{ fontSize: 22 }}/> Grades</h1>
@@ -393,7 +393,7 @@ export default function CourseDashboard() {
           </div>
         </>)}
 
-        {/* ── SYLLABUS — real data from Firebase ── */}
+        {/* SYLLABUS — real data from Firebase */}
         {page === 'syllabus' && (<>
           <div className="page-header">
             <h1><MenuBookIcon style={{ fontSize: 22 }}/> Syllabus</h1>
@@ -464,10 +464,10 @@ export default function CourseDashboard() {
           )}
         </>)}
 
-        {/* ── SEARCH ── */}
+        {/* SEARCH */}
         {page === 'search' && <SearchTab classId={classId} onOpen={openAssignment}/>}
 
-        {/* ── ANNOUNCEMENTS ── */}
+        {/* ANNOUNCEMENTS */}
         {page === 'announcements' && (
           <AnnouncementsTab classId={classId} classInfo={classInfo}/>
         )}

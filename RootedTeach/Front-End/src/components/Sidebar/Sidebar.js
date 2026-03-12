@@ -27,7 +27,7 @@ function Sidebar({
   const isCourse   = course !== null && course !== undefined;
   const isTeacher  = role === 'teacher';
 
-  // Avatar letter: first letter of username, or T/S fallback
+  // First letter of username, otherwise T/S
   const avatarLetter = username
     ? username[0].toUpperCase()
     : isTeacher ? 'T' : 'S';
@@ -45,7 +45,7 @@ function Sidebar({
     navigate('/course');
   }
 
-  // ── Course mode (CourseDashboard / AssignmentDashboard) ──
+  // Course mode (CourseDashboard or AssignmentDashboard)
   if (isCourse) {
     return (
       <aside className="sidebar">
@@ -94,7 +94,7 @@ function Sidebar({
     );
   }
 
-  // ── Teacher dashboard mode ──
+  // Teacher dashboard mode: 
   if (isTeacher) {
     return (
       <aside className="sidebar">
@@ -113,7 +113,7 @@ function Sidebar({
           </Link>
         </nav>
 
-        {/* My Classes */}
+        {/* My Classes: Display classes the teacher is teaching */}
         <div className="sidebar__section-label">My Classes</div>
         <div className="sidebar__class-list">
           {classes.length === 0 ? (
@@ -146,7 +146,7 @@ function Sidebar({
         </div>
 
         <div style={{ flex: 1 }} />
-
+        {/* Footer: Logout and Profile */}
         <SidebarFooter
           avatarLetter={avatarLetter}
           displayName={displayName}
@@ -184,7 +184,7 @@ function Sidebar({
         ))}
       </nav>
 
-      {/* My Classes */}
+      {/* My Classes: Display classes the student is in */}
       {courses.length > 0 && (
         <>
           <div className="sidebar__section-label">My Classes</div>
@@ -225,7 +225,7 @@ function Sidebar({
   );
 }
 
-// ── Shared footer: logout + profile ──
+// Shared footer: logout and profile
 function SidebarFooter({ avatarLetter, displayName, roleLabel, onLogout, onProfile }) {
   return (
     <div className="sidebar__footer">

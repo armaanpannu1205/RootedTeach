@@ -1,3 +1,6 @@
+/* App.js - The main router for the entire application. */
+/* Defines which pages are public and which require a login (Protected). */
+
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 
@@ -32,7 +35,7 @@ function App() {
     <div className="App">
       <Routes>
 
-        {/* Public pages (with Navbar) */}
+        {/* Public pages (Login, CreateAccount, OurTeam, Contact, About)*/}
         <Route element={<PublicRoute><PublicLayout /></PublicRoute>}>
           <Route path="/"         element={<LoginPage />} />
           <Route path="/register" element={<CreateAccount />} />
@@ -43,10 +46,10 @@ function App() {
           <Route path="/about"   element={<About />} />
         </Route>
 
-        {/* Protected pages */}
+        {/* Protected pages (Student/Teacher pages)*/}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
 
-        {/* Student */}
+        {/* Student Pages*/}
         <Route path="/course"       element={<ProtectedRoute><CourseDashboard /></ProtectedRoute>} />
         <Route path="/assignment"   element={<ProtectedRoute><AssignmentDashboard /></ProtectedRoute>} />
         <Route path="/assignments"  element={<ProtectedRoute><AllAssignment /></ProtectedRoute>} />
@@ -54,7 +57,7 @@ function App() {
         <Route path="/grades"       element={<ProtectedRoute><AllGrades /></ProtectedRoute>} />
         <Route path="/account"      element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
-        {/* Teacher */}
+        {/* Teacher Pages*/}
         <Route path="/teacher"  element={<ProtectedRoute><Teacher /></ProtectedRoute>} />
         <Route path="/class"    element={<ProtectedRoute><TCourseDashboard /></ProtectedRoute>} />
 

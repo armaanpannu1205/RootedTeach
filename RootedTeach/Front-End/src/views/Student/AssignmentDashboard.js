@@ -191,7 +191,7 @@ function AssignmentDashboard() {
           </div>
         </div>
 
-        {/* ── Right panel ── */}
+        {/* Right panel */}
         <div className="assign-detail-panel">
           {!currentSel ? (
             <div className="empty-detail">

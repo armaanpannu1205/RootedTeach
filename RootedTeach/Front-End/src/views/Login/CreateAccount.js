@@ -1,3 +1,6 @@
+/* CreateAccount.js - Registration logic with Email & Google sign-up. */
+/* Using Firebase for Google Auth, but all user data is handled by our Express backend. */
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CreateAccount.css";
@@ -10,8 +13,7 @@ import { Visibility, VisibilityOff, Email, Lock, Person, School, MenuBook } from
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { initializeApp, getApps } from "firebase/app";
 
-// Firebase is only used here to open the Google popup and get an ID token
-// No Firestore calls — all user data goes through our Express backend
+// Firebase setup - only used for the Google popup flow
 const firebaseConfig = {
   apiKey: "AIzaSyCFatSe4ClkJ6AGTCpyXC-2iX5TRCtaOuY",
   authDomain: "rootedteach.firebaseapp.com",
@@ -24,6 +26,7 @@ const firebaseConfig = {
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(firebaseApp);
 
+// Reusable styles for MUI TextFields to keep the JSX clean
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "12px",
@@ -39,6 +42,7 @@ const inputSx = {
   "& input": { color: "white" },
 };
 
+// Helper to calculate password strength for UI feedback
 function getPasswordStrength(pw) {
   if (pw.length === 0) return { value: 0,   label: "",          color: "transparent" };
   if (pw.length < 6)   return { value: 25,  label: "Too short", color: "#fc8181" };
@@ -62,10 +66,12 @@ export default function CreateAccount() {
 
   const strength = getPasswordStrength(password);
 
+  // Normal Email/Password Registration
   const handleSignUp = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
 
+    // Basic validation before hitting the server
     if (password !== confirmPw) return setMessage({ type: "error", text: "Passwords do not match." });
     if (password.length < 6)    return setMessage({ type: "error", text: "Password must be at least 6 characters." });
 
@@ -93,16 +99,17 @@ export default function CreateAccount() {
     }
   };
 
+  // Google OAuth flow
   const handleGoogleSignUp = async () => {
     setMessage({ type: "", text: "" });
     setGoogleLoading(true);
     try {
-      // Step 1: open Google popup and get ID token
+      // 1. Get token from Google
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      // Step 2: send ID token + chosen role to our backend
+      // 2. Send token and role to our backend for DB storage
       const res = await fetch("http://localhost:5001/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,10 +118,12 @@ export default function CreateAccount() {
 
       const data = await res.json();
       if (res.ok) {
+        // Save session info
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("username", data.user.username);
+        // Redirect based on student or teacher role
         navigate(data.user.role === "Teacher" ? "/teacher" : "/dashboard");
       } else {
         setMessage({ type: "error", text: data.message });
@@ -137,6 +146,7 @@ export default function CreateAccount() {
           <p className="create-account-subtitle">Join RootedTeach — select your role to get started</p>
         </div>
 
+        {/* User Role Toggle - important for backend routing later */}
         <div className="role-toggle-wrapper">
           <ToggleButtonGroup value={role} exclusive fullWidth onChange={(_, val) => val && setRole(val)}>
             <ToggleButton value="Student"><School fontSize="small" />&nbsp; Student</ToggleButton>
@@ -171,6 +181,7 @@ export default function CreateAccount() {
           <Divider sx={{ flex: 1, borderColor: "rgba(255,255,255,0.1)" }} />
         </Box>
 
+        {/* Basic info fields */}
         <Grid container spacing={1.5}>
           <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label="First Name" fullWidth required value={firstName}
@@ -229,6 +240,7 @@ export default function CreateAccount() {
           </Grid>
         </Grid>
 
+        {/* Strength bar: only shows when the user starts typing */}
         {password.length > 0 && (
           <div className="strength-row">
             <LinearProgress variant="determinate" value={strength.value} sx={{
@@ -240,6 +252,7 @@ export default function CreateAccount() {
           </div>
         )}
 
+        {/* Error/Success messages */}
         {message.text && (
           <Alert severity={message.type} sx={{
             borderRadius: "10px",
