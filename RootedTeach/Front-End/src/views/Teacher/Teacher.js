@@ -38,8 +38,21 @@ function Teacher() {
 
   // POST new class to the backend, then append it to local state
   // TODO: If we are editing an existing class, this should probably be a PUT request later!
-  const handleAddClass = async (newClass) => {
-    try {
+
+const handleAddClass = async (newClass) => {
+  try {
+    if (editingIndex !== null) {
+      const classId = classes[editingIndex].id;
+      const res = await api.put(`/api/classes/${classId}`, {
+        className: newClass.title,
+        courseName: newClass.courseName,
+        quarter: newClass.quarter,
+        color: newClass.color,
+        syllabus: newClass.syllabus || null,
+      });
+      const updated = await res.json();
+      setClasses((prev) => prev.map((c, i) => i === editingIndex ? { ...c, ...updated } : c));
+    } else {
       const res = await api.post('/api/classes', {
         className: newClass.title,
         courseName: newClass.courseName,
@@ -49,17 +62,14 @@ function Teacher() {
         syllabus: newClass.syllabus || null,
       });
       const saved = await res.json();
-      
-      // Optimistically update the UI with the newly created class from the server
       setClasses((prev) => [...prev, saved]);
-    } catch (err) {
-      console.error('Failed to save class:', err);
     }
-    
-    // Always close the modal and reset edit state, regardless of success/fail
-    setIsModalOpen(false);
-    setEditingIndex(null);
-  };
+  } catch (err) {
+    console.error('Failed to save class:', err);
+  }
+  setIsModalOpen(false);
+  setEditingIndex(null);
+};
 
   // DELETE class from backend, then remove it from local state
   const handleDelete = async (classId) => {
