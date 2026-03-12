@@ -570,7 +570,7 @@ function TCourseDashboard() {
 
   const [activeTab, setActiveTab] = useState('assignments');
   const [codeCopied, setCodeCopied] = useState(false);
-  const [classCode] = useState(state.classCode || '—');
+  const [classCode] = useState(state.classCode || '');
   const [assignments, setAssignments] = useState([]);
 
   // Fetch assignments for calendar

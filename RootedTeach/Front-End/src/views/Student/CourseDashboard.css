@@ -542,3 +542,59 @@
     border: 1px dashed var(--border, #e5e7eb);
   }
 
+
+/* ── Search ── */
+.search-input {
+  width: 100%; padding: 11px 14px 11px 40px; border: 1.5px solid #e8eaf0;
+  border-radius: 10px; font-size: 14px; font-family: inherit; outline: none;
+  background: #fafbff; transition: border-color .2s;
+}
+.search-input:focus { border-color: #7269e0; background: #fff; }
+.search-btn {
+  padding: 11px 20px; background: #7269e0; color: #fff; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.search-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Grade circle ── */
+.grade-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* ── Week list ── */
+.week-list { list-style: none; padding: 0; margin: 0; }
+.week-item {
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 10px 0; border-bottom: 1px solid #f0f0f6;
+}
+.week-item:last-child { border-bottom: none; }
+.week-num { min-width: 64px; font-size: 11px; font-weight: 700; color: #7269e0; text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
+.week-topic { font-size: 14px; color: #1a1f36; line-height: 1.5; }
+
+/* ── Empty / loading ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 40px 24px; color: var(--muted); text-align: center;
+}
+.loading-state { text-align: center; padding: 32px; color: var(--muted); }
+.error-banner {
+  background: rgba(229,62,62,.08); border: 1px solid rgba(229,62,62,.2);
+  border-radius: 10px; padding: 12px 16px; color: #e53e3e; margin-top: 12px;
+}
+
+/* ── Info grid ── */
+.info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.info-item { display: flex; flex-direction: column; gap: 4px; }
+.info-item label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
+.info-item span { font-size: 14px; color: #1a1f36; font-weight: 500; }
+
+/* ── Grade table ── */
+.grade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.grade-table th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1.5px solid #f0f0f6; }
+.grade-table td { padding: 12px 12px; border-bottom: 1px solid #f8f8fc; vertical-align: middle; }
+.grade-table tr:last-child td { border-bottom: none; }
+
+.grade-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+.grade-pill.done    { background: rgba(56,161,105,.1);  color: #38a169; }
+.grade-pill.pending { background: rgba(232,160,64,.1);  color: #e8a040; }
