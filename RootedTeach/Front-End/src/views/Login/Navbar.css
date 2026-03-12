@@ -1,0 +1,94 @@
+/* Navbar.css - Styles for the main navigation bar. */
+/* Keeping it sticky at the top and adding some subtle glow effects. */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+
+.public-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Deep blue gradient for a high-tech feel */
+  background: linear-gradient(90deg, #060a1c, #0d1836, #060a1c);
+  box-shadow: 0 4px 30px rgba(0, 120, 255, 0.2);
+  border-bottom: 2px solid rgba(79, 172, 254, 0.2);
+  padding: 0 48px;
+  height: 96px;
+  /* Stay at the top even when scrolling */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Rounded logo with a soft neon glow */
+.logo-img {
+  height: 64px;
+  width: auto;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: drop-shadow(0 0 10px rgba(76, 201, 240, 0.6));
+  transition: filter 0.3s, transform 0.3s;
+}
+
+.logo-img:hover {
+  filter: drop-shadow(0 0 18px rgba(76, 201, 240, 0.9));
+  transform: scale(1.05);
+}
+
+.LogoName {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  /* Push everything else to the right */
+  margin: 0 auto 0 16px;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+.public-nav ul {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  gap: 8px;
+}
+
+.public-nav ul li {
+  list-style: none;
+}
+
+/* Individual nav items */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+/* MUI icons inside the links */
+.nav-link .MuiSvgIcon-root {
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+/* Hover state: adding a light blue tint */
+.nav-link:hover {
+  background: rgba(79, 172, 254, 0.14);
+  border-color: rgba(79, 172, 254, 0.3);
+}
+
+/* Style for the current active page */
+.nav-link.active {
+  background: rgba(79, 172, 254, 0.18);
+  border-color: rgba(79, 172, 254, 0.4);
+  font-weight: 600;
+}

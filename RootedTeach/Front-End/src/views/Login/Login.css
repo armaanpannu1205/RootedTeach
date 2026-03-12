@@ -1,0 +1,360 @@
+/* HomePage.css - Styling for Login and Signup views. */
+/* Using Inter for a more modern, techy look compared to the About page. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Background setup with the same scrolling effect as other pages */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100vh;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  width: 100vw;
+  background-image: url('https://i.imgur.com/YrZFSSN.jpg');
+  background-size: cover;
+  background-repeat: repeat;
+  animation: moveBg 40s linear infinite;
+  padding: 40px 20px;
+}
+
+@keyframes moveBg {
+  0%   { background-position: 0 0; }
+  100% { background-position: 1000px 0; }
+}
+
+/* Form field layout: Label on top of input */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+}
+
+.field-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Subtle dark input look to fit the theme */
+.field-group input {
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+  width: 100%;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.field-group input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+/* Blue focus ring for better accessibility */
+.field-group input:focus {
+  border-color: #6ea8ff;
+  box-shadow: 0 0 0 3px rgba(110, 168, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Needed to position the password toggle icon inside the input */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrapper input {
+  padding-right: 40px;
+}
+
+/* Eye icon for showing/hiding password */
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.toggle-password:hover { opacity: 1; }
+
+/* Red asterisk for required fields */
+.req { color: #fc8181; margin-left: 2px; }
+
+/* Glassmorphism card for the login form */
+.login-form {
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: rgba(0, 1, 26, 0.82);
+  padding: 48px 52px 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+}
+
+.login-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0461cc, #2b1775);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  color: white;
+  margin-bottom: 4px;
+  box-shadow: 0 4px 16px rgba(4, 97, 204, 0.4);
+}
+
+.login-form h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.4);
+}
+
+/* Register form is slightly wider to handle the two-column grid */
+.register-form {
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 1, 26, 0.82);
+  padding: 44px 52px 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  width: 100%;
+  max-width: 620px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+}
+
+/* Similar header style to keep things consistent */
+.register-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.register-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0461cc, #2b1775);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  color: white;
+  box-shadow: 0 4px 16px rgba(4, 97, 204, 0.4);
+}
+
+/* Role toggle - Student vs Teacher button group */
+.role-toggle {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.role-option {
+  flex: 1;
+  padding: 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Active role with the signature blue gradient */
+.role-option.active {
+  background: linear-gradient(135deg, #0461cc, #2b1775);
+  color: white;
+  box-shadow: 0 2px 12px rgba(4, 97, 204, 0.35);
+}
+
+.role-option:hover:not(.active) {
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Feedback for password complexity */
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  transition: background 0.3s, width 0.3s;
+}
+
+/* Dynamic colors for the strength meter */
+.strength-bar.weak   { background: #fc8181; width: 30%; }
+.strength-bar.medium { background: #f6ad55; width: 65%; }
+.strength-bar.strong { background: #68d391; width: 100%; }
+
+.strength-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+  white-space: nowrap;
+}
+
+/* Alert styles for form errors or success messages */
+.form-message {
+  width: 100%;
+  font-size: 0.83rem;
+  border-radius: 8px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.form-message.error {
+  color: #fc8181;
+  background: rgba(252, 129, 129, 0.08);
+  border: 1px solid rgba(252, 129, 129, 0.25);
+}
+
+.form-message.success {
+  color: #68d391;
+  background: rgba(104, 211, 145, 0.08);
+  border: 1px solid rgba(104, 211, 145, 0.25);
+}
+
+/* Primary CTA button style */
+.submit-btn {
+  font-size: 1rem;
+  border-radius: 10px;
+  padding: 14px;
+  border: none;
+  color: white;
+  background: linear-gradient(135deg, #0461cc, #2b1775);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  width: 100%;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  box-shadow: 0 4px 16px rgba(4, 97, 204, 0.3);
+}
+
+.submit-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 8px 20px rgba(4, 97, 204, 0.45);
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Rotation for the loading state */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.form-footer {
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 4px;
+}
+
+.link-text {
+  color: #6ea8ff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+/* Stack inputs on small mobile screens */
+@media (max-width: 650px) {
+  .login-form, .register-form {
+    padding: 36px 24px;
+  }
+  .field-row {
+    flex-direction: column;
+  }
+}
