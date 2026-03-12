@@ -1,28 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
 import './StudentDashboard.css';
 import './Account.css';
 
-const DEFAULT_USER = {
-  name: 'Student Name',
-  email: 'student@ucla.edu',
-  studentId: '123456789',
-  major: 'Computer Science',
-  year: '3rd Year',
-};
-
 function Account() {
   const navigate = useNavigate();
-  const [courses] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('courses')) || []; }
-    catch { return []; }
-  });
 
-  const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('userProfile')) || DEFAULT_USER; }
-    catch { return DEFAULT_USER; }
-  });
+  // Pull real enrolled courses count from student's class list
+  const [enrolledCount, setEnrolledCount] = useState(0);
+
+  useEffect(() => {
+    const studentId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+    if (!studentId) return;
+    fetch(`http://localhost:5001/api/classes/student/${studentId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => r.json())
+      .then(data => setEnrolledCount(Array.isArray(data) ? data.length : 0))
+      .catch(() => {});
+  }, []);
+
+  // Build user from real localStorage fields set at login
+  const buildUserFromStorage = () => {
+    const saved = (() => { try { return JSON.parse(localStorage.getItem('userProfile')) || {}; } catch { return {}; } })();
+    return {
+      name:      saved.name      || localStorage.getItem('username') || 'Unknown',
+      email:     saved.email     || localStorage.getItem('email')    || '',
+      studentId: saved.studentId || localStorage.getItem('userId')   || '—',
+      major:     saved.major     || '',
+      year:      saved.year      || '',
+    };
+  };
+
+  const [user, setUser] = useState(buildUserFromStorage);
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft]     = useState(user);
@@ -44,7 +56,7 @@ function Account() {
 
   return (
     <div className="app-layout">
-      <Sidebar courses={courses} activePage="account" />
+      <Sidebar activePage="account" />
 
     <div className="main">
     <div className="topbar">
@@ -72,7 +84,7 @@ function Account() {
                 { label: 'Student ID',       value: user.studentId, locked: true },
                 { label: 'Major',             value: user.major     },
                 { label: 'Year',              value: user.year      },
-                { label: 'Enrolled courses',  value: courses.length },
+                { label: 'Enrolled courses',  value: enrolledCount },
             ].map(({ label, value, locked }) => (
                 <div className="account-field" key={label}>
                 <label>{label}{locked && <span className ="account-locked-badge">🔒</span>}</label>

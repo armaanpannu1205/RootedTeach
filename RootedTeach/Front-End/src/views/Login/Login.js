@@ -63,6 +63,7 @@ export default function LoginPage() {
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("username", data.user.username);
+        localStorage.setItem("email", email);
         navigate(data.user.role === "Teacher" ? "/teacher" : "/dashboard");
       } else {
         setErrorMsg(data.message);
@@ -96,6 +97,7 @@ export default function LoginPage() {
         localStorage.setItem("role", data.user.role);
         localStorage.setItem("userId", data.user._id);
         localStorage.setItem("username", data.user.username);
+        localStorage.setItem("email", email);
         navigate(data.user.role === "Teacher" ? "/teacher" : "/dashboard");
       } else {
         setErrorMsg(data.message);
