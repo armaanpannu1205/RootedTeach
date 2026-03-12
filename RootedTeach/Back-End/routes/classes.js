@@ -86,20 +86,46 @@ router.get('/:id', async (req, res) => {
     res.json({ id: classDoc.id, ...data, teacher });
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
-router.delete('/:id', async (req, res) => {
+
+// ── PUT /:id — update class name, quarter, color, syllabus ─
+router.put('/:id', async (req, res) => {
+  try {
+    const { className, quarter, color, syllabus } = req.body;
+    const updateData = {};
+    if (className !== undefined) updateData.className = className;
+    if (quarter   !== undefined) updateData.quarter   = quarter;
+    if (color     !== undefined) updateData.color     = color;
+    if (syllabus  !== undefined) updateData.syllabus  = syllabus;
+    await db.collection('classes').doc(req.params.id).update(updateData);
+    res.json({ message: 'Class updated', ...updateData });
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
+});
+
+// ── POST /:id/announcements — post announcement ──────────────────────────
+router.post('/:id/announcements', async (req, res) => {
+  try {
+    const { title, body, teacherName } = req.body;
+    if (!title || !body) return res.status(400).json({ message: 'Title and body required' });
+    const classRef = db.collection('classes').doc(req.params.id);
+    const classDoc = await classRef.get();
+    if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
+    const existing = classDoc.data().announcements || [];
+    const newAnn = { id: Date.now().toString(), title, body, teacherName: teacherName || 'Instructor', createdAt: new Date().toISOString() };
+    await classRef.update({ announcements: [...existing, newAnn] });
+    res.json(newAnn);
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
+});
+
+// ── DELETE /:id/announcements/:annId — delete announcement ───────────────
+router.delete('/:id/announcements/:annId', async (req, res) => {
   try {
     const classRef = db.collection('classes').doc(req.params.id);
     const classDoc = await classRef.get();
     if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
-
-    // Delete all assignments for this class
-    const assignments = await db.collection('assignments').where('class', '==', req.params.id).get();
-    const batch = db.batch();
-    assignments.docs.forEach(doc => batch.delete(doc.ref));
-    batch.delete(classRef);
-    await batch.commit();
-
-    res.json({ message: 'Class and assignments deleted' });
-  } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
+    const filtered = (classDoc.data().announcements || []).filter(a => a.id !== req.params.annId);
+    await classRef.update({ announcements: filtered });
+    res.json({ success: true });
+  } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
+
 module.exports = router;

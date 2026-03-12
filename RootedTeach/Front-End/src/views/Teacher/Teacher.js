@@ -50,16 +50,8 @@ function Teacher() {
     setEditingIndex(null);
   };
 
-  const handleDelete = async (index) => {
-    const cls = classes[index];
-    try {
-      await fetch(`http://localhost:5001/api/classes/${cls.id}`, {
-        method: 'DELETE',
-      });
-      setClasses((prev) => prev.filter((_, i) => i !== index));
-    } catch (err) {
-      console.error('Failed to delete class:', err);
-    }
+  const handleDelete = (index) => {
+    setClasses((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleEdit = (index) => {
@@ -128,6 +120,7 @@ function Teacher() {
                   quarter={cls.quarter}
                   color={cls.color}
                   classId={cls.id}
+                  classCode={cls.classCode}
                   onDelete={() => handleDelete(index)}
                   onEdit={() => handleEdit(index)}
                 />

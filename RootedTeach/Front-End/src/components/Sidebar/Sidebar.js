@@ -65,17 +65,17 @@ function Sidebar({
 
         <nav className="sidebar__nav">
           {[
-            { key: 'assignments', icon: '📝', label: 'Assignments'   },
-            { key: 'grade',       icon: '📊', label: 'Grades'        },
-            { key: 'syllabus',    icon: '📋', label: 'Syllabus'      },
-            { key: 'search',      icon: '🔍', label: 'Search'        },
-          ].map(({ key, icon, label }) => (
+            { key: 'assignments',   label: 'Assignments'   },
+            { key: 'grade',         label: 'Grades'        },
+            { key: 'syllabus',      label: 'Syllabus'      },
+            { key: 'announcements', label: 'Announcements' },
+            { key: 'search',        label: 'Search'        },
+          ].map(({ key, label }) => (
             <button
               key={key}
               className={`sidebar__nav-item ${activePage === key ? 'active' : ''}`}
               onClick={() => onPageChange && onPageChange(key)}
             >
-              <span className="sidebar__nav-icon">{icon}</span>
               <span className="sidebar__nav-label">{label}</span>
             </button>
           ))}

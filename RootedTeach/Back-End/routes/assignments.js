@@ -14,7 +14,11 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
-const upload = multer({
+// For teacher assignment attachments — any file type allowed
+const upload = multer({ storage });
+
+// For student submissions — code files only
+const uploadCodeOnly = multer({
   storage,
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
@@ -23,8 +27,8 @@ const upload = multer({
   },
 });
 
-// ── POST / — Create assignment ────────────────────────────────────────────
-router.post('/', async (req, res) => {
+// ── POST / — Create assignment (optionally with attached file) ───────────
+router.post('/', upload.single('file'), async (req, res) => {
   try {
     const { title, description, dueDate, classId, teacherId, points } = req.body;
     const newAssignment = {
@@ -37,6 +41,10 @@ router.post('/', async (req, res) => {
     };
     if (description) newAssignment.description = description;
     if (dueDate) newAssignment.dueDate = dueDate;
+    if (req.file) {
+      newAssignment.attachedFilePath = req.file.path;
+      newAssignment.attachedFileName = req.file.originalname;
+    }
     const ref = await db.collection('assignments').add(newAssignment);
     res.status(201).json({ id: ref.id, ...newAssignment });
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
@@ -176,7 +184,7 @@ router.get('/search', async (req, res) => {
 
 // ── POST /:id/submit — Student submits file ───────────────────────────────
 router.post('/:id/submit', (req, res, next) => {
-  upload.single('file')(req, res, (err) => {
+  uploadCodeOnly.single('file')(req, res, (err) => {
     if (err) return res.status(400).json({ message: err.message });
     next();
   });

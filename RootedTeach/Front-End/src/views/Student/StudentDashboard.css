@@ -590,3 +590,15 @@
      background: #b52a38;
      transform: translateY(-1px);
    }
+
+   .stat-val {
+    color: #1a1a2e !important;
+  }
+  
+  .stat-label {
+    color: #6b6880 !important;
+  }
+  
+  .stat-card {
+    background: #ffffff !important;
+  }

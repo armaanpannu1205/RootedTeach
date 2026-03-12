@@ -1,6 +1,6 @@
 import "./OurTeam.css";
 import Card from "./Card";
-import { Images } from "./Assets/Images.js";
+import { Images } from "../../../assets/Images.js";
 
 function OurTeam() {
   return (
@@ -33,10 +33,16 @@ function OurTeam() {
           role="Front-End Developer"
           about="Hello! My name is Rica and I am a 3rd year at UCLA, majoring in Linguistics and Computer Science. In my free time I like going to concerts, cute cafes & restaurants, and doing my nails!"
         />
+        <Card
+          image={Images.IntroShige.src}
+          name="Shigehiro Harada"
+          role="Back-End Developer"
+          about="Hello! My name is Shige and I am a 3rd year at UCLA, majoring in Linguistics and Computer Science. In my free time I like playing video gaems, go to the gym."
+        />
       </div>
     </div>
     </div>
   );
-}
+} 
 
 export default OurTeam;  

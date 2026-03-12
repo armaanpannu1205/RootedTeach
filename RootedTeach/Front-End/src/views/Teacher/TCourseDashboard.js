@@ -19,14 +19,17 @@ function letterGrade(pct) {
   if (pct >= 77) return { letter: 'C+', color: '#e8a040', bg: '#fff8ee' };
   if (pct >= 73) return { letter: 'C',  color: '#e8a040', bg: '#fff8ee' };
   if (pct >= 70) return { letter: 'C-', color: '#e8a040', bg: '#fff8ee' };
-  return           { letter: 'D/F', color: '#e53e3e', bg: '#fff5f5' };
+  if (pct >= 67) return { letter: 'D+', color: '#e53e3e', bg: '#fff5f5' };
+  if (pct >= 63) return { letter: 'D',  color: '#e53e3e', bg: '#fff5f5' };
+  if (pct >= 60) return { letter: 'D-', color: '#e53e3e', bg: '#fff5f5' };
+  return           { letter: 'F',  color: '#c53030', bg: '#fff5f5' };
 }
 
 function aiMeta(score) {
   if (score == null) return null;
-  if (score >= 70) return { label: 'Likely AI-generated', color: '#e53e3e', bg: 'rgba(229,62,62,0.08)', icon: '🤖', border: '#e53e3e40' };
-  if (score >= 40) return { label: 'Mixed signals',       color: '#e8a040', bg: 'rgba(232,160,64,0.08)', icon: '⚠️', border: '#e8a04040' };
-  return                   { label: 'Likely human-written', color: '#38a169', bg: 'rgba(56,161,105,0.08)', icon: '✅', border: '#38a16940' };
+  if (score >= 70) return { label: 'Likely AI-generated', color: '#e53e3e', bg: 'rgba(229,62,62,0.08)', icon: 'AI', border: '#e53e3e40' };
+  if (score >= 40) return { label: 'Mixed signals',       color: '#e8a040', bg: 'rgba(232,160,64,0.08)', icon: 'Mixed', border: '#e8a04040' };
+  return                   { label: 'Likely human-written', color: '#38a169', bg: 'rgba(56,161,105,0.08)', icon: 'Human', border: '#38a16940' };
 }
 
 const NAV_ICONS = {
@@ -35,6 +38,8 @@ const NAV_ICONS = {
   grades:   "M3 3h18v18H3zM3 9h18M3 15h18M9 3v18",
   cal:      "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
   students: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+  announce: "M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6.002 6.002 0 0 0-4-5.659V5a2 2 0 1 0-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9",
+  syllabus: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
 };
 
 // ── AI Score Ring ──────────────────────────────────────────
@@ -55,54 +60,346 @@ function AiRing({ score, size = 56 }) {
   );
 }
 
-// ── AI Detail Panel ────────────────────────────────────────
-function AiDetailPanel({ sub, assignmentPoints }) {
-  const [open, setOpen] = useState(false);
-  const meta = aiMeta(sub.aiScore);
-  if (sub.aiScore == null) return <div style={{fontSize:12,color:'#aaa',padding:'4px 0'}}>No AI analysis (non-code file)</div>;
+// ── AI Report Modal with Claude analysis ─────────────────
+function AiReportModal({ sub, studentName, assignmentTitle, onClose }) {
+  const meta         = aiMeta(sub.aiScore);
+  const score        = sub.aiScore;
+  const circ         = 2 * Math.PI * 36;
+  const offset       = circ - (circ * score / 100);
+  const aiSignals    = sub.explainedAiSignals    || [];
+  const humanSignals = sub.explainedHumanSignals || [];
+
+  const [claudeReport, setClaudeReport]     = useState('');
+  const [loadingReport, setLoadingReport]   = useState(false);
+  const [reportError, setReportError]       = useState('');
+  const [reportGenerated, setReportGenerated] = useState(false);
+
+  const LIMIT = 5;
+  const STORAGE_KEY = 'claude_report_usage';
+
+  function getUsage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      const today = new Date().toDateString();
+      return parsed.date === today ? parsed.count : 0;
+    } catch { return 0; }
+  }
+
+  function incrementUsage() {
+    const today = new Date().toDateString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: today, count: getUsage() + 1 }));
+  }
+
+  const usageCount = getUsage();
+  const limitReached = usageCount >= LIMIT;
+
+  async function generateReport() {
+    if (limitReached) { setReportError(`Daily limit of ${LIMIT} reports reached. Resets tomorrow.`); return; }
+    setLoadingReport(true); setReportError('');
+    const aiList    = aiSignals.map(s => s.explanation).join('; ') || 'None detected';
+    const humanList = humanSignals.map(s => s.explanation).join('; ') || 'None detected';
+    const prompt = `You are an academic integrity assistant reviewing a student's code submission for a university professor.
+
+Assignment: "${assignmentTitle}"
+Student: ${studentName}
+AI Detection Score: ${score}/100 — ${meta.label}
+AI signals: ${aiList}
+Human signals: ${humanList}
+
+The student's actual code is included below. Your job is to review it directly and give the professor a clear, evidence-based analysis. Reference specific lines, variable names, patterns, or sections you observe in the code itself. Point out anything that looks inconsistent with student-written work (e.g. overly polished comments, non-standard idioms, unusual structure) or anything that looks authentically student-written (e.g. debug artifacts, unconventional naming, incremental logic). Write 3–4 paragraphs in plain prose. End with a concrete recommendation.`;
+
+    try {
+      const res = await api.post('/api/claude', { prompt, filePath: sub.filePath });
+      const data = await res.json();
+      if (!res.ok) { setReportError(data.message || 'Claude API error'); return; }
+      if (data.text) { setClaudeReport(data.text); setReportGenerated(true); incrementUsage(); }
+      else setReportError('No response from Claude.');
+    } catch (e) {
+      setReportError('Failed to connect to server. Is the backend running?');
+    } finally { setLoadingReport(false); }
+  }
 
   return (
-    <div style={{marginTop:8}}>
-      <button onClick={() => setOpen(!open)} style={{
-        display:'flex',alignItems:'center',gap:8,background:meta.bg,border:`1px solid ${meta.border}`,
-        borderRadius:8,padding:'7px 12px',cursor:'pointer',fontSize:13,fontWeight:600,color:meta.color,width:'100%',justifyContent:'space-between'
-      }}>
-        <span>{meta.icon} AI Score: {sub.aiScore}/100 — {meta.label}</span>
-        <span style={{fontSize:11,opacity:.7}}>{open?'▲ hide':'▼ details'}</span>
-      </button>
-      {open && (
-        <div style={{background:'#fafbff',border:'1px solid #e8eaf0',borderRadius:8,padding:12,marginTop:6}}>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-            <div>
-              <div style={{fontSize:11,fontWeight:700,color:'#e53e3e',letterSpacing:.5,marginBottom:6}}>🤖 AI INDICATORS ({(sub.explainedAiSignals||[]).length})</div>
-              {(sub.explainedAiSignals||[]).length === 0
-                ? <div style={{fontSize:12,color:'#aaa'}}>None detected</div>
-                : (sub.explainedAiSignals||[]).map((s,i) => (
-                  <div key={i} style={{fontSize:12,color:'#4a5568',padding:'3px 0',borderBottom:'1px solid #f0f0f4',lineHeight:1.4}}>
-                    <span style={{color:'#e53e3e',fontWeight:600}}>• </span>{s.explanation}
-                  </div>
-                ))
-              }
+    <div style={{
+      position:'fixed',inset:0,background:'rgba(15,16,30,0.65)',backdropFilter:'blur(6px)',
+      display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:20
+    }} onClick={onClose}>
+      <div style={{
+        background:'#fff',borderRadius:20,width:'100%',maxWidth:600,maxHeight:'90vh',
+        overflow:'auto',boxShadow:'0 32px 80px rgba(0,0,0,0.22)',animation:'slideUp .22s ease'
+      }} onClick={e=>e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{
+          background: score >= 70 ? 'linear-gradient(135deg,#fff1f2,#ffe4e6)'
+                    : score >= 40 ? 'linear-gradient(135deg,#fffbeb,#fef3c7)'
+                    :               'linear-gradient(135deg,#f0fdf4,#dcfce7)',
+          padding:'24px 28px 20px',borderRadius:'20px 20px 0 0',borderBottom:'1px solid rgba(0,0,0,0.06)'
+        }}>
+          <div style={{display:'flex',alignItems:'flex-start',gap:20}}>
+            <div style={{position:'relative',width:84,height:84,flexShrink:0}}>
+              <svg width={84} height={84} style={{transform:'rotate(-90deg)'}}>
+                <circle cx={42} cy={42} r={36} fill="none" stroke={meta.color+'25'} strokeWidth={7}/>
+                <circle cx={42} cy={42} r={36} fill="none" stroke={meta.color} strokeWidth={7}
+                  strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"/>
+              </svg>
+              <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                <span style={{fontSize:20,fontWeight:900,color:meta.color,lineHeight:1}}>{score}</span>
+                <span style={{fontSize:9,fontWeight:600,color:meta.color,opacity:.7}}>/ 100</span>
+              </div>
             </div>
-            <div>
-              <div style={{fontSize:11,fontWeight:700,color:'#38a169',letterSpacing:.5,marginBottom:6}}>👤 HUMAN INDICATORS ({(sub.explainedHumanSignals||[]).length})</div>
-              {(sub.explainedHumanSignals||[]).length === 0
-                ? <div style={{fontSize:12,color:'#aaa'}}>None detected</div>
-                : (sub.explainedHumanSignals||[]).map((s,i) => (
-                  <div key={i} style={{fontSize:12,color:'#4a5568',padding:'3px 0',borderBottom:'1px solid #f0f0f4',lineHeight:1.4}}>
-                    <span style={{color:'#38a169',fontWeight:600}}>• </span>{s.explanation}
-                  </div>
-                ))
-              }
+            <div style={{flex:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:meta.color,textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>AI Detection Report</div>
+              <div style={{fontSize:18,fontWeight:800,color:'#1a1a2e',lineHeight:1.2,marginBottom:4}}>{studentName}</div>
+              <div style={{fontSize:12,color:'#6b7280',marginBottom:10}}>{assignmentTitle}</div>
+              <span style={{display:'inline-flex',alignItems:'center',gap:6,background:meta.color+'15',border:`1px solid ${meta.color}30`,borderRadius:20,padding:'5px 14px',fontSize:12,fontWeight:700,color:meta.color}}>
+                {meta.label}
+              </span>
             </div>
+            <button onClick={onClose} style={{background:'rgba(0,0,0,0.07)',border:'none',borderRadius:'50%',width:32,height:32,cursor:'pointer',color:'#6b7280',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:18}}>&#x2715;</button>
           </div>
-          <div style={{fontSize:11,color:'#8a8fa8',borderTop:'1px solid #e8eaf0',paddingTop:8,lineHeight:1.5}}>
-            ⚙️ Score is computed by our Naive Bayes ML model trained on real code samples.
-            High AI score means the code shows patterns common in AI-generated output (structured comments, 
-            consistent formatting, algorithm explanations) and lacks typical human patterns 
-            (debug logs, informal comments, var usage). This is an indicator, not proof.
+          <div style={{marginTop:16}}>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:10,fontWeight:600,color:'#9ca3af',marginBottom:5,textTransform:'uppercase',letterSpacing:.5}}>
+              <span>Human</span><span>AI-Generated</span>
+            </div>
+            <div style={{background:'rgba(0,0,0,0.08)',borderRadius:999,height:7,overflow:'hidden'}}>
+              <div style={{width:`${score}%`,height:'100%',background:`linear-gradient(90deg,#38a169,${score>=70?'#e53e3e':score>=40?'#d97706':'#38a169'})`,borderRadius:999}}/>
+            </div>
           </div>
         </div>
+
+        {/* Body */}
+        <div style={{padding:'20px 28px 28px',display:'flex',flexDirection:'column',gap:16}}>
+
+          {/* Signals grid */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div style={{background:'#fef2f2',borderRadius:12,padding:14,border:'1px solid #fecaca'}}>
+              <div style={{display:'flex',alignItems:'center',marginBottom:10}}>
+                <span style={{fontSize:11,fontWeight:800,color:'#e53e3e',textTransform:'uppercase',letterSpacing:.6}}>AI Signals</span>
+                <span style={{marginLeft:'auto',background:'#e53e3e',color:'#fff',borderRadius:999,fontSize:10,fontWeight:700,padding:'2px 8px'}}>{aiSignals.length}</span>
+              </div>
+              {aiSignals.length === 0
+                ? <div style={{fontSize:12,color:'#9ca3af',fontStyle:'italic'}}>None detected</div>
+                : aiSignals.map((s,i) => (
+                  <div key={i} style={{display:'flex',gap:7,padding:'5px 0',borderBottom:i<aiSignals.length-1?'1px solid #fee2e2':'none'}}>
+                    <span style={{color:'#e53e3e',fontWeight:700,flexShrink:0}}>•</span>
+                    <span style={{fontSize:12,color:'#374151',lineHeight:1.5}}>{s.explanation}</span>
+                  </div>
+                ))}
+            </div>
+            <div style={{background:'#f0fdf4',borderRadius:12,padding:14,border:'1px solid #bbf7d0'}}>
+              <div style={{display:'flex',alignItems:'center',marginBottom:10}}>
+                <span style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:.6}}>Human Signals</span>
+                <span style={{marginLeft:'auto',background:'#059669',color:'#fff',borderRadius:999,fontSize:10,fontWeight:700,padding:'2px 8px'}}>{humanSignals.length}</span>
+              </div>
+              {humanSignals.length === 0
+                ? <div style={{fontSize:12,color:'#9ca3af',fontStyle:'italic'}}>None detected</div>
+                : humanSignals.map((s,i) => (
+                  <div key={i} style={{display:'flex',gap:7,padding:'5px 0',borderBottom:i<humanSignals.length-1?'1px solid #d1fae5':'none'}}>
+                    <span style={{color:'#059669',fontWeight:700,flexShrink:0}}>•</span>
+                    <span style={{fontSize:12,color:'#374151',lineHeight:1.5}}>{s.explanation}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* Claude report section */}
+          <div style={{borderRadius:14,border:'1px solid #e8eaf0',overflow:'hidden'}}>
+            <div style={{background:'linear-gradient(135deg,#1a1a2e,#3d405b)',padding:'14px 18px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:'#fff',letterSpacing:.3}}>Claude AI Analysis</div>
+                <div style={{fontSize:11,color:'rgba(255,255,255,0.55)',marginTop:2}}>Detailed review of each signal</div>
+              </div>
+              {!reportGenerated && !loadingReport && (
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:11,color:'rgba(255,255,255,0.45)'}}>{LIMIT - usageCount} / {LIMIT} left today</span>
+                  <button onClick={generateReport} disabled={limitReached} style={{
+                    background: limitReached ? 'rgba(255,255,255,0.1)' : '#e07a5f',
+                    color: limitReached ? 'rgba(255,255,255,0.4)' : '#fff',
+                    border:'none',borderRadius:8,
+                    padding:'7px 16px',fontSize:12,fontWeight:600,
+                    cursor: limitReached ? 'not-allowed' : 'pointer',
+                    transition:'background .15s',whiteSpace:'nowrap'
+                  }}>
+                    {limitReached ? 'Limit reached' : 'Generate Report'}
+                  </button>
+                </div>
+              )}
+              {loadingReport && (
+                <div style={{display:'flex',alignItems:'center',gap:8,color:'rgba(255,255,255,0.7)',fontSize:12}}>
+                  <div style={{width:14,height:14,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',animation:'spin .8s linear infinite'}}/>
+                  Analyzing…
+                </div>
+              )}
+            </div>
+
+            <div style={{padding:'16px 18px',background:'#fafbff',minHeight:60}}>
+              {!reportGenerated && !loadingReport && !reportError && (
+                <p style={{fontSize:12,color:'#9ca3af',margin:0,fontStyle:'italic',lineHeight:1.6}}>
+                  Click "Generate Report" to have Claude analyze each detected signal in detail and provide a recommended action.
+                </p>
+              )}
+              {reportError && (
+                <p style={{fontSize:12,color:'#e53e3e',margin:0}}>{reportError}</p>
+              )}
+              {claudeReport && (
+                <div style={{fontSize:13,color:'#374151',lineHeight:1.75,whiteSpace:'pre-wrap'}}>
+                  {claudeReport}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Methodology note */}
+          <div style={{background:'#f8f9ff',borderRadius:10,padding:'12px 14px',border:'1px solid #e8eaf0'}}>
+            <div style={{fontSize:10,fontWeight:700,color:'#8b9fbd',textTransform:'uppercase',letterSpacing:.6,marginBottom:5}}>About this score</div>
+            <p style={{fontSize:11,color:'#6b7280',lineHeight:1.6,margin:0}}>
+              Scored by our Naive Bayes ML model. High score = patterns common in AI output. This is an indicator, not proof — always combine with other context before taking action.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── AI Badge (inline, opens modal) ────────────────────────
+function AiDetailPanel({ sub, assignmentPoints, studentName, assignmentTitle }) {
+  const [showReport, setShowReport] = useState(false);
+  const meta = aiMeta(sub.aiScore);
+  if (sub.aiScore == null) return (
+    <div style={{fontSize:12,color:'#aaa',padding:'5px 0',display:'flex',alignItems:'center',gap:5}}>
+      <span style={{opacity:.5}}>—</span> No AI analysis (non-code file)
+    </div>
+  );
+  return (
+    <>
+      <button onClick={() => setShowReport(true)} style={{
+        display:'flex',alignItems:'center',gap:8,background:meta.bg,border:`1px solid ${meta.border}`,
+        borderRadius:8,padding:'7px 12px',cursor:'pointer',fontSize:12,fontWeight:600,color:meta.color,
+        width:'100%',justifyContent:'space-between',marginTop:8,transition:'opacity .15s'
+      }}>
+        <span style={{display:'flex',alignItems:'center',gap:6}}>{meta.icon} {sub.aiScore}/100 — {meta.label}</span>
+        <span style={{fontSize:11,opacity:.65,background:'rgba(0,0,0,0.06)',borderRadius:6,padding:'2px 8px'}}>View full report →</span>
+      </button>
+      {showReport && (
+        <AiReportModal
+          sub={sub}
+          studentName={studentName}
+          assignmentTitle={assignmentTitle}
+          onClose={() => setShowReport(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════
+// SYLLABUS TAB
+// ══════════════════════════════════════════════════════════
+function TabSyllabus({ color, classId }) {
+  const [loading, setLoading]     = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [course, setCourse]       = useState({});
+  const [editForm, setEditForm]   = useState({ className: '', quarter: '' });
+  const [schedule, setSchedule]   = useState([]);
+
+  useEffect(() => {
+    if (!classId) return;
+    api.get(`/api/classes/${classId}`)
+      .then(r => r.json())
+      .then(data => {
+        setCourse(data);
+        setEditForm({ className: data.className || '', quarter: data.quarter || '' });
+        setSchedule(data.syllabus?.weeks?.length ? data.syllabus.weeks : [{ week: 'Week 1', topic: '' }]);
+        setLoading(false);
+      })
+      .catch(console.error);
+  }, [classId]);
+
+  const handleSave = async () => {
+    try {
+      const updatedSyllabus = { ...(course.syllabus || {}), weeks: schedule };
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:5001/api/classes/${classId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ className: editForm.className, quarter: editForm.quarter, syllabus: updatedSyllabus }),
+      });
+      setCourse({ ...course, className: editForm.className, quarter: editForm.quarter, syllabus: updatedSyllabus });
+      setIsEditing(false);
+    } catch (e) { console.error(e); }
+  };
+
+  const handleScheduleChange = (idx, field, val) => {
+    const s = [...schedule];
+    s[idx][field] = val;
+    setSchedule(s);
+  };
+
+  if (loading) return <div className="tcd-empty"><p>Loading…</p></div>;
+
+  return (
+    <div style={{ padding: 32, background: '#fff', borderRadius: 12, border: '1px solid #e8eaf0', margin: '0 4px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+        <div>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 700, color: '#1a1a2e' }}>Syllabus</div>
+          <div style={{ fontSize: 12, color: '#a09db0', marginTop: 2 }}>Course schedule and class details</div>
+        </div>
+        {!isEditing ? (
+          <button onClick={() => setIsEditing(true)} style={{ background: color, color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Edit Syllabus</button>
+        ) : (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="modal-button-cancel" onClick={() => setIsEditing(false)}>Cancel</button>
+            <button className="modal-button-save" style={{ background: color }} onClick={handleSave}>Save</button>
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 32 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8fa8', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 6 }}>Class Name</div>
+          {isEditing
+            ? <input className="modal-input" value={editForm.className} onChange={e => setEditForm(p => ({ ...p, className: e.target.value }))} />
+            : <div style={{ fontSize: 15, fontWeight: 500, color: '#1a1a2e' }}>{course.className || '—'}</div>}
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8fa8', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 6 }}>Class Code</div>
+          <div style={{ fontSize: 15, fontWeight: 500, color: color, fontFamily: 'monospace', letterSpacing: 2 }}>{course.classCode || '—'}</div>
+        </div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#8a8fa8', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 6 }}>Quarter</div>
+          {isEditing
+            ? <input className="modal-input" value={editForm.quarter} onChange={e => setEditForm(p => ({ ...p, quarter: e.target.value }))} />
+            : <div style={{ fontSize: 15, fontWeight: 500, color: '#1a1a2e' }}>{course.quarter || '—'}</div>}
+        </div>
+      </div>
+
+      <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', borderBottom: '1px solid #e8eaf0', paddingBottom: 12, marginBottom: 16 }}>Weekly Schedule</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {schedule.map((w, idx) => (
+          <div key={idx} style={{ display: 'flex', gap: 14, alignItems: 'center', background: '#fafbff', padding: '10px 14px', borderRadius: 8, border: '1px solid #f0f0f4' }}>
+            {isEditing ? (
+              <>
+                <input className="modal-input" style={{ width: 100 }} value={w.week} onChange={e => handleScheduleChange(idx, 'week', e.target.value)} placeholder="Week" />
+                <input className="modal-input" style={{ flex: 1 }} value={w.topic} onChange={e => handleScheduleChange(idx, 'topic', e.target.value)} placeholder="Topic..." />
+                <button onClick={() => setSchedule(schedule.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>×</button>
+              </>
+            ) : (
+              <>
+                <div style={{ width: 80, fontSize: 12, fontWeight: 700, color }}>{w.week}</div>
+                <div style={{ fontSize: 13, color: '#4a5568' }}>{w.topic || '—'}</div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+      {isEditing && (
+        <button onClick={() => setSchedule([...schedule, { week: `Week ${schedule.length + 1}`, topic: '' }])}
+          style={{ marginTop: 14, background: 'none', border: `1px dashed ${color}`, color, padding: '10px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, width: '100%', fontSize: 13 }}>
+          + Add Week
+        </button>
       )}
     </div>
   );
@@ -141,9 +438,26 @@ function TabAssignments({ color, classId, teacherId }) {
     e.preventDefault();
     if (!form.title.trim()) return;
     try {
-      const res = await api.post('/api/assignments', { title: form.title, description: form.description, dueDate: form.dueDate, classId, points: Number(form.points) });
+      const fd = new FormData();
+      fd.append('title', form.title);
+      fd.append('description', form.description || '');
+      fd.append('dueDate', form.dueDate || '');
+      fd.append('classId', classId);
+      fd.append('points', String(form.points || 100));
+      fd.append('teacherId', teacherId || '');
+      if (form.attachedFile) fd.append('file', form.attachedFile);
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5001/api/assignments', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
       const saved = await res.json();
-      if (res.ok) { setAssignments(prev => [saved, ...prev]); setForm({ title:'', description:'', dueDate:'', points:100 }); setShowCreate(false); }
+      if (res.ok) {
+        setAssignments(prev => [{ ...saved, submissions: [] }, ...prev]);
+        setForm({ title:'', description:'', dueDate:'', points:100, attachedFile: null });
+        setShowCreate(false);
+      }
     } catch (e) { console.error(e); }
   };
 
@@ -168,8 +482,8 @@ function TabAssignments({ color, classId, teacherId }) {
     <div className="tab-layout">
       <div className="tab-list-col">
         <button className="add-class-button" style={{width:'100%',marginBottom:14}} onClick={() => setShowCreate(true)}>+ New Assignment</button>
-        {loading && <div className="tcd-empty"><div style={{fontSize:28,opacity:.4}}>⏳</div><p>Loading…</p></div>}
-        {!loading && assignments.length === 0 && <div className="tcd-empty"><div style={{fontSize:36,opacity:.4}}>📋</div><p>No assignments yet</p></div>}
+        {loading && <div className="tcd-empty"><p>Loading…</p></div>}
+        {!loading && assignments.length === 0 && <div className="tcd-empty"><p>No assignments yet</p></div>}
         {assignments.map(a => {
           const graded = (a.submissions||[]).filter(s => s.score !== null).length;
           const flagged = (a.submissions||[]).filter(s => s.aiScore >= 70).length;
@@ -184,7 +498,7 @@ function TabAssignments({ color, classId, teacherId }) {
                 <div className="asgn-card-stats">
                   <span className="asgn-stat-pill asgn-stat-submitted">{(a.submissions||[]).length} submitted</span>
                   <span className="asgn-stat-pill asgn-stat-graded">{graded} graded</span>
-                  {flagged > 0 && <span className="asgn-stat-pill" style={{background:'rgba(229,62,62,.1)',color:'#e53e3e'}}>🤖 {flagged} flagged</span>}
+                  {flagged > 0 && <span className="asgn-stat-pill" style={{background:'rgba(229,62,62,.1)',color:'#e53e3e'}}>{flagged} flagged</span>}
                 </div>
               </div>
               <button className="asgn-delete-btn" onClick={e=>{e.stopPropagation();del(a.id);}}>
@@ -197,7 +511,7 @@ function TabAssignments({ color, classId, teacherId }) {
 
       <div className="tab-detail-col">
         {!active ? (
-          <div className="tcd-empty" style={{flex:1}}><div style={{fontSize:40,opacity:.35}}>📄</div><p style={{fontWeight:700}}>Select an assignment</p><span>Click one on the left to view details or submissions.</span></div>
+          <div className="tcd-empty" style={{flex:1}}><p style={{fontWeight:700}}>Select an assignment</p><span>Click one on the left to view details or submissions.</span></div>
         ) : (
           <>
             <div className="asgn-tabs">
@@ -219,6 +533,16 @@ function TabAssignments({ color, classId, teacherId }) {
                   <div className="asgn-detail-item"><div className="asgn-detail-label">Graded</div><div className="asgn-detail-val">{(active.submissions||[]).filter(s=>s.score!==null).length} / {(active.submissions||[]).length}</div></div>
                   <div className="asgn-detail-item"><div className="asgn-detail-label">AI Flagged</div><div className="asgn-detail-val" style={{color:'#e53e3e'}}>{(active.submissions||[]).filter(s=>s.aiScore>=70).length}</div></div>
                 </div>
+                {active.attachedFileName && active.attachedFilePath && (
+                  <div style={{marginTop:12,padding:'10px 14px',background:'#f8f7ff',borderRadius:10,border:'1px solid #e8e6ff'}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:.5,marginBottom:6}}>Attached File</div>
+                    <a href={`http://localhost:5001/${active.attachedFilePath.replace(/\\/g,'/')}`}
+                      target="_blank" rel="noreferrer"
+                      style={{color:'#7269e0',fontWeight:600,fontSize:13,display:'flex',alignItems:'center',gap:6}}>
+                       {active.attachedFileName}
+                    </a>
+                  </div>
+                )}
                 <div className="asgn-detail-label" style={{marginTop:16,marginBottom:8}}>Instructions</div>
                 <div className="asgn-description">{active.description||'No description provided.'}</div>
               </div>
@@ -226,7 +550,7 @@ function TabAssignments({ color, classId, teacherId }) {
 
             {subView === 'submissions' && (
               <div className="asgn-detail-panel">
-                {(active.submissions||[]).length === 0 && <div className="tcd-empty"><div style={{fontSize:32,opacity:.4}}>📭</div><p>No submissions yet</p></div>}
+                {(active.submissions||[]).length === 0 && <div className="tcd-empty"><p>No submissions yet</p></div>}
                 {(active.submissions||[]).map((sub, idx) => {
                   const name = sub.student?.username || sub.student?._id || 'Unknown';
                   const initial = name.charAt(0).toUpperCase();
@@ -240,7 +564,14 @@ function TabAssignments({ color, classId, teacherId }) {
                           <div className="sub-name">{name}</div>
                           <div className="sub-meta">
                             Submitted {sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : '—'}
-                            {sub.fileName && <> · <b>{sub.fileName}</b></>}
+                            {sub.fileName && (
+                              sub.filePath
+                                ? <> · <a href={`http://localhost:5001/${sub.filePath.replace(/\\/g,'/')}`}
+                                    target="_blank" rel="noreferrer"
+                                    style={{color:'#7269e0',fontWeight:600,textDecoration:'underline'}}
+                                    onClick={e=>e.stopPropagation()}>{sub.fileName}</a></>
+                                : <> · <b>{sub.fileName}</b></>
+                            )}
                           </div>
                         </div>
                         <div style={{display:'flex',alignItems:'center',gap:10}}>
@@ -254,9 +585,9 @@ function TabAssignments({ color, classId, teacherId }) {
                       </div>
 
                       {/* AI breakdown */}
-                      <AiDetailPanel sub={sub} assignmentPoints={active.points}/>
+                      <AiDetailPanel sub={sub} assignmentPoints={active.points} studentName={name} assignmentTitle={active.title}/>
 
-                      {sub.feedback && !isGrading && <div className="sub-feedback">💬 {sub.feedback}</div>}
+                      {sub.feedback && !isGrading && <div className="sub-feedback"> {sub.feedback}</div>}
 
                       {isGrading ? (
                         <div className="sub-grade-form">
@@ -298,6 +629,12 @@ function TabAssignments({ color, classId, teacherId }) {
                 <label><div className="modal-form-label-text">Due Date</div><input type="date" className="modal-input" value={form.dueDate} onChange={e=>setForm(p=>({...p,dueDate:e.target.value}))}/></label>
                 <label><div className="modal-form-label-text">Points</div><input type="number" className="modal-input" value={form.points} onChange={e=>setForm(p=>({...p,points:e.target.value}))}/></label>
               </div>
+              <label>
+                <div className="modal-form-label-text">Attach File (optional)</div>
+                <input type="file" className="modal-input" style={{padding:'6px 12px',cursor:'pointer'}}
+                  onChange={e=>setForm(p=>({...p,attachedFile:e.target.files[0]||null}))}/>
+                {form.attachedFile && <div style={{fontSize:12,color:'#7269e0',marginTop:4}}> {form.attachedFile.name}</div>}
+              </label>
               <div className="modal-actions">
                 <button type="button" className="modal-button-cancel" onClick={()=>setShowCreate(false)}>Cancel</button>
                 <button type="submit" className="modal-button-save">Create</button>
@@ -325,7 +662,7 @@ function TabGrades({ color, classId }) {
   }, [classId]);
 
   if (loading) return <div className="tcd-empty" style={{flex:1,marginTop:40}}><div style={{fontSize:32,opacity:.4}}>⏳</div><p>Loading grades…</p></div>;
-  if (!stats || stats.totalStudents === 0) return <div className="tcd-empty" style={{flex:1,marginTop:40}}><div style={{fontSize:40,opacity:.35}}>📊</div><p style={{fontWeight:700}}>No students yet</p></div>;
+  if (!stats || stats.totalStudents === 0) return <div className="tcd-empty" style={{flex:1,marginTop:40}}><div style={{fontSize:40,opacity:.35}}></div><p style={{fontWeight:700}}>No students yet</p></div>;
 
   const { studentGrades = [], totalAssignments, totalStudents, avgSubmissionRate, avgAiScore, flaggedSubmissions } = stats;
 
@@ -337,7 +674,7 @@ function TabGrades({ color, classId }) {
           <div className="grades-summary-item"><span className="grades-summary-num">{totalAssignments}</span><span>Assignments</span></div>
           <div className="grades-summary-item"><span className="grades-summary-num" style={{color}}>{avgSubmissionRate}%</span><span>Avg Submission Rate</span></div>
           {avgAiScore != null && <div className="grades-summary-item"><span className="grades-summary-num" style={{color: avgAiScore>=70?'#e53e3e':'#38a169'}}>{avgAiScore}%</span><span>Avg AI Score</span></div>}
-          {flaggedSubmissions > 0 && <div className="grades-summary-item"><span className="grades-summary-num" style={{color:'#e53e3e'}}>{flaggedSubmissions}</span><span>🤖 AI Flagged</span></div>}
+          {flaggedSubmissions > 0 && <div className="grades-summary-item"><span className="grades-summary-num" style={{color:'#e53e3e'}}>{flaggedSubmissions}</span><span> AI Flagged</span></div>}
         </div>
 
         <table className="grades-table">
@@ -451,14 +788,14 @@ function TabStudents({ color, classId }) {
       .catch(() => setLoading(false));
   }, [classId]);
 
-  if (loading) return <div className="tcd-empty"><div style={{fontSize:28,opacity:.4}}>⏳</div><p>Loading…</p></div>;
+  if (loading) return <div className="tcd-empty"><p>Loading…</p></div>;
   const students = stats?.studentGrades || [];
 
   return (
     <div className="students-tab">
       <div className="students-header-row"><div className="students-count">{students.length} enrolled students</div></div>
       <div className="students-list">
-        {students.length === 0 && <div className="tcd-empty"><div style={{fontSize:32,opacity:.4}}>👥</div><p>No students yet</p></div>}
+        {students.length === 0 && <div className="tcd-empty"><div style={{fontSize:32,opacity:.4}}></div><p>No students yet</p></div>}
         {students.map(s => {
           const aiM = aiMeta(s.avgAiScore);
           const lg = s.gradedCount > 0 ? letterGrade(s.pct) : null;
@@ -557,6 +894,116 @@ function TabCalendar({ color, assignments }) {
 // ══════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// ANNOUNCEMENTS TAB
+// ══════════════════════════════════════════════════════════
+function TabAnnouncements({ color, classId }) {
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading]             = useState(true);
+  const [showForm, setShowForm]           = useState(false);
+  const [form, setForm]                   = useState({ title: '', body: '' });
+  const [saving, setSaving]               = useState(false);
+  const teacherName = localStorage.getItem('username') || 'Instructor';
+
+  const fetchAnn = useCallback(async () => {
+    try {
+      const res  = await api.get(`/api/classes/${classId}`);
+      const data = await res.json();
+      setAnnouncements((data.announcements || []).slice().reverse());
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }, [classId]);
+
+  useEffect(() => { fetchAnn(); }, [fetchAnn]);
+
+  const post = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim() || !form.body.trim()) return;
+    setSaving(true);
+    try {
+      const res = await api.post(`/api/classes/${classId}/announcements`, { ...form, teacherName });
+      if (res.ok) { await fetchAnn(); setForm({ title: '', body: '' }); setShowForm(false); }
+    } catch (e) { console.error(e); }
+    setSaving(false);
+  };
+
+  const del = async (annId) => {
+    try {
+      await api.del(`/api/classes/${classId}/announcements/${annId}`);
+      setAnnouncements(prev => prev.filter(a => a.id !== annId));
+    } catch (e) { console.error(e); }
+  };
+
+  return (
+    <div style={{ padding: '24px 28px', maxWidth: 700 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <div style={{ fontFamily: 'Fraunces, serif', fontSize: 20, fontWeight: 700, color: '#1a1a2e' }}>Announcements</div>
+          <div style={{ fontSize: 12, color: '#a09db0', marginTop: 2 }}>Post updates visible to all students in this class</div>
+        </div>
+        <button onClick={() => setShowForm(true)} className="add-class-button" style={{ whiteSpace: 'nowrap' }}>
+          + New Announcement
+        </button>
+      </div>
+
+      {showForm && (
+        <div style={{ background: '#fffef9', border: '1px solid rgba(26,26,46,0.09)', borderRadius: 14, padding: '20px 22px', marginBottom: 20, boxShadow: '0 2px 12px rgba(26,26,46,0.07)' }}>
+          <form onSubmit={post}>
+            <div style={{ marginBottom: 12 }}>
+              <div className="modal-form-label-text">Title</div>
+              <input className="modal-input" placeholder="e.g. Office Hours Cancelled This Week"
+                value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} required/>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <div className="modal-form-label-text">Message</div>
+              <textarea className="modal-input" rows={4} style={{ resize: 'vertical' }}
+                placeholder="Write your announcement here..."
+                value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} required/>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button type="button" className="modal-button-cancel" onClick={() => { setShowForm(false); setForm({ title: '', body: '' }); }}>Cancel</button>
+              <button type="submit" className="modal-button-save" disabled={saving}>{saving ? 'Posting...' : 'Post'}</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {loading && <div className="tcd-empty"><p>Loading...</p></div>}
+      {!loading && announcements.length === 0 && !showForm && (
+        <div className="tcd-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round"><path d={NAV_ICONS.announce}/></svg>
+          <p style={{ fontWeight: 600 }}>No announcements yet</p>
+          <span>Post an update for your students</span>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {announcements.map(ann => (
+          <div key={ann.id} style={{ background: '#fffef9', border: '1px solid rgba(26,26,46,0.08)', borderRadius: 12, padding: '16px 18px', borderLeft: `4px solid ${color}` }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e', marginBottom: 4 }}>{ann.title}</div>
+                <p style={{ fontSize: 13, color: '#6b6880', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{ann.body}</p>
+              </div>
+              <button onClick={() => del(ann.id)} style={{ color: '#d1d5db', cursor: 'pointer', padding: 4, border: 'none', background: 'none', borderRadius: 6, flexShrink: 0, transition: 'color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#e53e3e'}
+                onMouseLeave={e => e.currentTarget.style.color = '#d1d5db'}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                </svg>
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: '#a09db0', marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+              {ann.teacherName} &middot; {new Date(ann.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TCourseDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -570,7 +1017,7 @@ function TCourseDashboard() {
 
   const [activeTab, setActiveTab] = useState('assignments');
   const [codeCopied, setCodeCopied] = useState(false);
-  const [classCode] = useState(state.classCode || '');
+  const [classCode] = useState(state.classCode || '—');
   const [assignments, setAssignments] = useState([]);
 
   // Fetch assignments for calendar
@@ -587,16 +1034,18 @@ function TCourseDashboard() {
   };
 
   const tabs = [
-    { id:'assignments', label:'Assignments', iconPath:NAV_ICONS.assign },
-    { id:'grades',      label:'Grades',      iconPath:NAV_ICONS.grades },
-    { id:'calendar',    label:'Calendar',    iconPath:NAV_ICONS.cal    },
-    { id:'students',    label:'Students',    iconPath:NAV_ICONS.students },
+    { id:'syllabus',      label:'Syllabus',      iconPath:NAV_ICONS.syllabus  },
+    { id:'assignments',   label:'Assignments',   iconPath:NAV_ICONS.assign    },
+    { id:'grades',        label:'Grades',        iconPath:NAV_ICONS.grades    },
+    { id:'calendar',      label:'Calendar',      iconPath:NAV_ICONS.cal       },
+    { id:'students',      label:'Students',      iconPath:NAV_ICONS.students  },
+    { id:'announcements', label:'Announcements', iconPath:NAV_ICONS.announce  },
   ];
 
   return (
     <div className="teacher-container">
       <aside className="teacher-sidebar">
-        <div className="sidebar-logo"><div className="sidebar-logo-icon">🎓</div><span className="sidebar-logo-text">RootedTeach</span></div>
+        <div className="sidebar-logo"><div className="sidebar-logo-icon"></div><span className="sidebar-logo-text">RootedTeach</span></div>
         <Link to="/teacher" className="sidebar-back-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d={NAV_ICONS.back}/></svg>
           All Classes
@@ -637,7 +1086,7 @@ function TCourseDashboard() {
             <div className="tcd-class-code" onClick={handleCopy} title="Click to copy class code">
               <div className="tcd-class-code-label">Class Code</div>
               <div className="tcd-class-code-value" style={{color}}>{classCode}</div>
-              <div className="tcd-class-code-hint">{codeCopied?'✓ Copied!':'Click to copy'}</div>
+              <div className="tcd-class-code-hint">{codeCopied?' Copied!':'Click to copy'}</div>
             </div>
           </div>
           <div className="tcd-tab-bar">
@@ -651,10 +1100,12 @@ function TCourseDashboard() {
         </div>
 
         <div className="tcd-tab-content">
+          {activeTab==='syllabus'      && <TabSyllabus      color={color} classId={classId}/>}
           {activeTab==='assignments' && <TabAssignments color={color} classId={classId} teacherId={teacherId}/>}
           {activeTab==='grades'      && <TabGrades      color={color} classId={classId}/>}
           {activeTab==='calendar'    && <TabCalendar    color={color} assignments={assignments}/>}
-          {activeTab==='students'    && <TabStudents    color={color} classId={classId}/>}
+          {activeTab==='students'      && <TabStudents      color={color} classId={classId}/>}
+          {activeTab==='announcements' && <TabAnnouncements color={color} classId={classId}/>}
         </div>
       </main>
     </div>

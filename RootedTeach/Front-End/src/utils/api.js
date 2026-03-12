@@ -1,16 +1,31 @@
 const BASE = 'http://localhost:5001';
-async function apiFetch(path, options = {}) {
+
+function authHeaders() {
   const token = localStorage.getItem('token');
-  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) };
-  if (options.body instanceof FormData) delete headers['Content-Type'];
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
-  if (res.status === 401) { localStorage.clear(); window.location.href = '/'; throw new Error('Session expired.'); }
-  return res;
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
+
 export const api = {
-  get:      (path)       => apiFetch(path, { method: 'GET' }),
-  post:     (path, body) => apiFetch(path, { method: 'POST', body: JSON.stringify(body) }),
-  postForm: (path, fd)   => apiFetch(path, { method: 'POST', body: fd }),
-  del:      (path)       => apiFetch(path, { method: 'DELETE' }),
+  get: (path) =>
+    fetch(`${BASE}${path}`, { headers: { 'Content-Type': 'application/json', ...authHeaders() } }),
+
+  post: (path, body) =>
+    fetch(`${BASE}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(body),
+    }),
+
+  del: (path) =>
+    fetch(`${BASE}${path}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    }),
+
+  put: (path, body) =>
+    fetch(`${BASE}${path}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(body),
+    }),
 };
-export default api;

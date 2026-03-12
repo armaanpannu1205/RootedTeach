@@ -1,27 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
-import { api } from '../../utils/api';
 import './StudentDashboard.css';
+
+const BASE = 'http://localhost:5001';
+function authFetch(path, opts = {}) {
+  const token = localStorage.getItem('token');
+  return fetch(`${BASE}${path}`, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(opts.headers || {}) },
+  });
+}
 
 function StudentDashboard() {
   const navigate = useNavigate();
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [code, setCode] = useState('');
-  const [joining, setJoining] = useState(false);
-  const [joinError, setJoinError] = useState('');
-  const [toast, setToast] = useState('');
+  const [courses, setCourses]       = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [showModal, setShowModal]   = useState(false);
+  const [code, setCode]             = useState('');
+  const [joining, setJoining]       = useState(false);
+  const [joinError, setJoinError]   = useState('');
+  const [toast, setToast]           = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const studentId = localStorage.getItem('userId');
 
   useEffect(() => {
-    api.get(`/api/classes/student/${studentId}`)
-      .then(r => r.json())
-      .then(data => setCourses(Array.isArray(data) ? data : []))
-      .catch(() => setCourses([]))
-      .finally(() => setLoading(false));
+    const fetchCourses = async () => {
+      try {
+        const res  = await authFetch(`/api/classes/student/${studentId}`);
+        const data = await res.json();
+        const classList = Array.isArray(data) ? data : [];
+
+        // Fetch real assignment counts for each class
+        const enriched = await Promise.all(classList.map(async c => {
+          try {
+            const aRes  = await authFetch(`/api/assignments/class/${c.id || c._id}`);
+            const aData = await aRes.json();
+            const list  = Array.isArray(aData) ? aData : [];
+            const now   = new Date();
+            const upcoming = list.filter(a => a.dueDate && new Date(a.dueDate) >= now).length;
+            return { ...c, assignments: list.length, upcoming };
+          } catch { return { ...c, assignments: 0, upcoming: 0 }; }
+        }));
+
+        setCourses(enriched);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourses();
   }, [studentId]);
 
   useEffect(() => { localStorage.setItem('courses', JSON.stringify(courses)); }, [courses]);
@@ -31,15 +61,34 @@ function StudentDashboard() {
     if (!trimmed) return;
     setJoining(true); setJoinError('');
     try {
-      const res = await api.post('/api/classes/join', { classCode: trimmed });
+      const res  = await authFetch('/api/classes/join', {
+        method: 'POST',
+        body: JSON.stringify({ classCode: trimmed, studentId }),
+      });
       const data = await res.json();
       if (!res.ok) { setJoinError(data.message || 'Failed to join class.'); return; }
+      // Enrich new class with assignment counts
+      try {
+        const aRes  = await authFetch(`/api/assignments/class/${data.class.id || data.class._id}`);
+        const aData = await aRes.json();
+        const list  = Array.isArray(aData) ? aData : [];
+        const now   = new Date();
+        data.class.assignments = list.length;
+        data.class.upcoming    = list.filter(a => a.dueDate && new Date(a.dueDate) >= now).length;
+      } catch {}
       setCourses(prev => [...prev, data.class]);
       setCode(''); setShowModal(false);
-      setToast(`✅ Joined ${data.class.className}!`);
+      setToast(`Joined ${data.class.className}`);
       setTimeout(() => setToast(''), 3000);
     } catch { setJoinError('Could not connect to server.'); }
     finally { setJoining(false); }
+  }
+
+  async function deleteCourse(classId) {
+    setCourses(prev => prev.filter(c => (c.id || c._id) !== classId));
+    setDeleteTarget(null);
+    setToast('Class removed from dashboard');
+    setTimeout(() => setToast(''), 3000);
   }
 
   function openCourse(course) {
@@ -53,12 +102,11 @@ function StudentDashboard() {
   return (
     <div className="app-layout">
       <Sidebar courses={courses} activePage="dashboard"/>
-
       <div className="main">
         <div className="topbar">
           <div>
             <h1>Dashboard</h1>
-            <p className="greeting">Welcome back, {localStorage.getItem('username') || 'Student'} 👋</p>
+            <p className="greeting">Welcome back, {localStorage.getItem('username') || 'Student'}</p>
           </div>
           <button className="add-btn" onClick={() => { setShowModal(true); setJoinError(''); setCode(''); }}>
             + Join class
@@ -66,16 +114,25 @@ function StudentDashboard() {
         </div>
 
         <div className="stats-row">
-          <div className="stat-card"><div className="stat-val">{loading ? '…' : courses.length}</div><div className="stat-label">Enrolled classes</div></div>
-          <div className="stat-card"><div className="stat-val">{totalAssignments}</div><div className="stat-label">Assignments</div></div>
-          <div className="stat-card"><div className="stat-val">{totalUpcoming}</div><div className="stat-label">Due upcoming</div></div>
+          <div className="stat-card">
+            <div className="stat-val">{loading ? '…' : courses.length}</div>
+            <div className="stat-label">Enrolled classes</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-val">{loading ? '…' : totalAssignments}</div>
+            <div className="stat-label">Assignments</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-val">{loading ? '…' : totalUpcoming}</div>
+            <div className="stat-label">Due upcoming</div>
+          </div>
         </div>
 
         <div className="section-title">My classes ({courses.length})</div>
         <div className="courses-grid">
-          {loading && <div className="empty-state"><div className="empty-icon">⏳</div><div>Loading your classes…</div></div>}
+          {loading && <div className="empty-state"><div>Loading your classes…</div></div>}
           {!loading && courses.length === 0 && (
-            <div className="empty-state"><div className="empty-icon">📚</div><div>You have no classes yet.<br/>Ask your professor for the 6-letter class code.</div></div>
+            <div className="empty-state"><div>You have no classes yet.<br/>Ask your professor for the 6-letter class code.</div></div>
           )}
           {courses.map(c => {
             const id = c.id || c._id;
@@ -85,16 +142,16 @@ function StudentDashboard() {
               <div className="course-card" key={id}>
                 <div className="card-header" style={{ background: bgColor }} onClick={() => openCourse(c)}>
                   <div className="card-code">{c.className}</div>
-                  <button className="card-delete-btn" onClick={e => { e.stopPropagation(); setDeleteTarget(c); }} title="Leave class">✕</button>
+                  <button className="card-delete-btn" onClick={e => { e.stopPropagation(); setDeleteTarget(c); }} title="Leave class" style={{fontSize:14,lineHeight:1}}>&#x2715;</button>
                 </div>
                 <div className="card-body" onClick={() => openCourse(c)}>
                   <div className="card-title">{c.className}</div>
                   <div className="card-prof">{c.teacher?.username ? `Prof. ${c.teacher.username}` : 'No teacher assigned'}</div>
                   <div className="card-meta">
-                    {c.quarter && <span className="badge">{c.quarter}</span>}
+                    {c.quarter   && <span className="badge">{c.quarter}</span>}
                     <span className="badge">{c.assignments || 0} assignments</span>
                     {c.upcoming > 0 && <span className="badge warn">{c.upcoming} due soon</span>}
-                    {c.classCode && <span className="badge" style={{fontFamily:'monospace',letterSpacing:'.08em'}}>{c.classCode}</span>}
+                    {c.classCode && <span className="badge" style={{ fontFamily:'monospace', letterSpacing:'.08em' }}>{c.classCode}</span>}
                   </div>
                 </div>
               </div>
@@ -113,7 +170,7 @@ function StudentDashboard() {
               onKeyDown={e => e.key === 'Enter' && joinCourse()}
               autoFocus maxLength={6}
               style={{ textTransform:'uppercase', letterSpacing:'.12em', fontWeight:600 }}/>
-            {joinError && <p style={{color:'#e05f5f',fontSize:13,marginTop:-12,marginBottom:16}}>⚠️ {joinError}</p>}
+            {joinError && <p style={{ color:'#e05f5f', fontSize:13, marginTop:-12, marginBottom:16 }}>{joinError}</p>}
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
               <button className="add-btn" onClick={joinCourse} disabled={joining}>{joining ? 'Joining…' : 'Join'}</button>
@@ -125,20 +182,17 @@ function StudentDashboard() {
       {deleteTarget && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setDeleteTarget(null)}>
           <div className="modal modal--danger">
-            <div className="modal-danger-icon">🗑️</div>
+            
             <h2>Leave class?</h2>
             <p><strong>{deleteTarget.className}</strong><br/>This will remove the class from your dashboard.</p>
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => setDeleteTarget(null)}>Cancel</button>
-              <button className="btn-danger" onClick={() => {
-                setCourses(prev => prev.filter(c => (c.id||c._id) !== (deleteTarget.id||deleteTarget._id)));
-                setDeleteTarget(null);
-                setToast('🗑️ Left class.'); setTimeout(()=>setToast(''),3000);
-              }}>Leave</button>
+              <button className="btn-danger" onClick={() => deleteCourse(deleteTarget.id || deleteTarget._id)}>Leave</button>
             </div>
           </div>
         </div>
       )}
+
       {toast && <div className="toast">{toast}</div>}
     </div>
   );
