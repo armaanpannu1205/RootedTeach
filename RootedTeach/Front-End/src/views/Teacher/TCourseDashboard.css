@@ -2,6 +2,9 @@
    TCourseDashboard — inherits Teacher.css vars
    ══════════════════════════════════════════════ */
 
+
+/* CSS code for the sidebar, page header, assignments, 
+grades, clandar, students, and animations for each page*/
 /* ── Back button in sidebar ── */
 .sidebar-back-btn {
   display: flex;

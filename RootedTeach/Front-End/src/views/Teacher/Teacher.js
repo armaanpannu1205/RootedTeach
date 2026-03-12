@@ -1,3 +1,7 @@
+/*The main teacher dashboard, shown after login
+this page displays all the classes the teacher created with options to
+add, edit, and delete classes. */
+
 import React, { useState, useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClassTile from './ClassTile.js';
@@ -31,6 +35,7 @@ function Teacher() {
     navigate('/');
   };
 
+  // POST new class to the backend, then append it to local state
   const handleAddClass = async (newClass) => {
     try {
       const res = await fetch('http://localhost:5001/api/classes', {
@@ -54,6 +59,8 @@ function Teacher() {
     setEditingIndex(null);
   };
 
+
+  // // DELETE class from backend, then remove it from local state
   const handleDelete = async (classId) => {
     if (!classId) { console.error('No classId to delete'); return; }
     try {
@@ -67,6 +74,7 @@ function Teacher() {
     setClasses((prev) => prev.filter(c => (c.id || c._id) !== classId));
   };
 
+  //opens the modal in edit mode, 
   const handleEdit = (index) => {
     setEditingIndex(index);
     setIsModalOpen(true);

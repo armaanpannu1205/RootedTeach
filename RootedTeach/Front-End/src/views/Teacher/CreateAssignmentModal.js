@@ -1,3 +1,5 @@
+// this is modal form for creating a new assignment under a specific class
+//calls onCreated() with the saved assignment data after a successful POST
 import React, { useState } from 'react';
 import { api } from '../../utils/api';
 import './ClassPageModal.css';
@@ -11,10 +13,16 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    //Lock the form and clear any previous error before submitting
     setSaving(true); setError('');
     try {
+
+      //post a new assignment to the backend, attaching classID and converting points to a numebr
       const res = await api.post('/api/assignments', { ...form, classId, points: Number(form.points) });
       const saved = await res.json();
+      
+      // if server returned error status, it would show message ands stop
       if (!res.ok) { setError(saved.message || 'Failed to create.'); setSaving(false); return; }
       onCreated?.(saved);
       setForm({ title:'', dueDate:'', description:'', points:100 });

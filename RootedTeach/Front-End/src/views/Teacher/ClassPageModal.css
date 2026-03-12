@@ -1,3 +1,5 @@
+/*this prevents the modal from overflowing on mobile 
+*/
 .cp-modal-overlay {
   position: fixed;
   top: 0;

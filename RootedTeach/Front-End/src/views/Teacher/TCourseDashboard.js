@@ -4,7 +4,9 @@ import { api } from '../../utils/api';
 import './Teacher.css';
 import './TCourseDashboard.css';
 
-// ── Helpers ────────────────────────────────────────────────
+/*the main teacher COURSE dashboard page includes the sub-tabs such as syllabus, assignments, grades
+caldendar, students and accouncements. Code for helper components, helper functions, and dataflow.
+// ── Helpers  
 const today = new Date();
 const ymd = (d) => d.toISOString().slice(0, 10);
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -42,7 +44,7 @@ const NAV_ICONS = {
   syllabus: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
 };
 
-// ── AI Score Ring ──────────────────────────────────────────
+// ── AI Score Ring  
 function AiRing({ score, size = 56 }) {
   if (score == null) return <div style={{width:size,height:size,borderRadius:'50%',background:'#f4f4f8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'#aaa'}}>N/A</div>;
   const meta = aiMeta(score);
@@ -60,7 +62,7 @@ function AiRing({ score, size = 56 }) {
   );
 }
 
-// ── AI Report Modal with Claude analysis ─────────────────
+// ── AI Report Modal with Claude analysis 
 function AiReportModal({ sub, studentName, assignmentTitle, onClose }) {
   const meta         = aiMeta(sub.aiScore);
   const score        = sub.aiScore;

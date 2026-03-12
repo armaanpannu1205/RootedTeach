@@ -12,7 +12,7 @@
 
 .modal-content--wide { max-width: 600px; }
 
-/* Step indicator */
+/* Step indicator which shows the progress steps at the top like "Step 1 -> Step 2 -> Step 3 -> Done!" */
 .modal-steps {
   display: flex; align-items: center; margin-bottom: 28px;
 }
@@ -45,7 +45,7 @@
   font-size: 22px; font-weight: 800; color: #1a1f36; margin-bottom: 24px;
 }
 
-/* Form fields */
+/* Form fields or general input layout which splits into 2 columns */
 .modal-form { display: flex; flex-direction: column; gap: 16px; }
 .modal-field { display: flex; flex-direction: column; gap: 6px; }
 .modal-form-label-text {
@@ -73,7 +73,7 @@
   outline: none; cursor: pointer;
 }
 
-/* Color swatches */
+/* Color swatches or the color picker buttons*/
 .modal-color-swatches { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .modal-swatch {
   width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent;
@@ -86,7 +86,7 @@
   padding: 0; cursor: pointer; background: none;
 }
 
-/* Weekly schedule */
+/* Weekly schedule: a scrollable list of days with time inputs  */
 .modal-week-list {
   border: 1.5px solid #e8eaf0; border-radius: 12px; overflow: hidden;
   max-height: 240px; overflow-y: auto;
@@ -101,7 +101,7 @@
 }
 .modal-week-input { margin: 0 !important; flex: 1; padding: 7px 10px !important; font-size: 13px !important; }
 
-/* Grading table */
+/* Grading table: dynamic table with add and delete button*/
 .modal-grading-header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
 }
@@ -128,7 +128,7 @@
 }
 .modal-delete-row-btn:hover { background: rgba(229,62,62,.08); }
 
-/* Actions */
+/* Action button that displays cancel and save button */
 .modal-actions {
   display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; padding-top: 8px;
   border-top: 1px solid #f0f0f4;

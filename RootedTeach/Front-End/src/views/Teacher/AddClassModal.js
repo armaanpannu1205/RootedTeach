@@ -97,7 +97,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
   };
 
   // Step indicator
-  const STEPS = [
+  const STEPS = [ 
     { n: 1, label: 'Basics',   icon: <SchoolIcon style={{ fontSize: 16 }}/> },
     { n: 2, label: 'Details',  icon: <MenuBookIcon style={{ fontSize: 16 }}/> },
     { n: 3, label: 'Schedule', icon: <ViewWeekIcon style={{ fontSize: 16 }}/> },
@@ -107,7 +107,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content modal-content--wide" onClick={e => e.stopPropagation()}>
 
-        {/* Step indicator */}
+        {/* Step indicator which renders the clickable step dots at the top of page*/}
         <div className="modal-steps">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.n}>
@@ -132,7 +132,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
 
         <form onSubmit={handleSubmit} className="modal-form">
 
-          {/* ── STEP 1: Basics ── */}
+          {/* ── STEP 1: Basics ── collects class code, course name, quarter, and theme color */}
           {step === 1 && (
             <>
               <div className="modal-field">
@@ -179,7 +179,7 @@ const AddClassModal = ({ isOpen, onClose, onSave, initialData }) => {
             </>
           )}
 
-          {/* ── STEP 2: Syllabus Details ── */}
+          {/* ── STEP 2: Syllabus Details collects the lecture time, locaiton, office hours, units, contrat email, and descriptions ── */}
           {step === 2 && (
             <>
               <div className="modal-grid-2">

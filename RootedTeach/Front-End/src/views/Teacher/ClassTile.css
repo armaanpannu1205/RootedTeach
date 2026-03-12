@@ -15,7 +15,7 @@
   transform: translateY(-4px);
 }
 
-/* ── Colored header ── */
+/* Colored header !! */
 .class-tile-header {
   height: 96px;
   display: flex;
@@ -46,7 +46,7 @@
   z-index: 1;
 }
 
-/* ── Card body ── */
+/* Card body  */
 .class-tile-body {
   padding: 16px 20px 18px;
   flex: 1;
@@ -74,7 +74,7 @@
   font-weight: 300;
 }
 
-/* ── 3-dot menu ── */
+/* the 3-dot menu */
 .class-tile-menu-btn {
   position: absolute;
   top: 10px;

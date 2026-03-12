@@ -1,20 +1,27 @@
+/*This displays a single class card with a colored header, course info
+and a dropdowm menu for edit nd delete actions 
+*/
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ClassTile.css';
 
 function ClassTile({ title, courseName, quarter, color, classId, classCode, onDelete, onEdit }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  //controls the visibility of the dot dropdown menu
+  lconst [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  //navigate to the class page, passing all relevant class data via route state
   const handleTileClick = () => {
     navigate('/class', { state: { title, courseName, quarter, color, classId, classCode } });
   };
 
+  //toggle dropdown menu
   const handleMenuClick = (e) => {
     e.stopPropagation();
     setMenuOpen(prev => !prev);
   };
-
+  
+  //close menu and trigger the parnet's onEdit
   const handleEdit = (e) => {
     e.stopPropagation();
     setMenuOpen(false);
