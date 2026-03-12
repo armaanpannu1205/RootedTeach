@@ -97,7 +97,7 @@ router.post('/:id/submit', upload.single('file'), async (req, res) => {
       if (codeExtensions.includes(ext)) {
         try {
           const code = fs.readFileSync(filePath, 'utf-8');
-          const response = await fetch('http://localhost:3001/analyze', {
+          const res = await fetch('http://localhost:3001/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code }),
