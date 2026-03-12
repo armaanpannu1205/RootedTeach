@@ -1,7 +1,10 @@
+// classes.js: API file for managing class creation, retrieval, updates, deletion, student management, and announcements
+
 const express = require('express');
 const router = express.Router();
 const { db } = require('../firebase');
 
+//create class
 router.post('/', async (req, res) => {
   try {
     const { className, teacherId, quarter, color, syllabus } = req.body;
@@ -12,6 +15,7 @@ router.post('/', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
+//get a list of all classes
 router.get('/', async (req, res) => {
   try {
     const snapshot = await db.collection('classes').get();
@@ -26,6 +30,7 @@ router.get('/', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
+//Get the Teacher's class ID
 router.get('/teacher/:teacherId', async (req, res) => {
   try {
     const snapshot = await db.collection('classes').where('teacher', '==', req.params.teacherId).get();
@@ -34,6 +39,7 @@ router.get('/teacher/:teacherId', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
+//Get a list of classes the student is enrolled in
 router.get('/student/:studentId', async (req, res) => {
   try {
     const snapshot = await db.collection('classes').where('students', 'array-contains', req.params.studentId).get();
@@ -48,6 +54,7 @@ router.get('/student/:studentId', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
+//attend a class with a class code
 router.post('/join', async (req, res) => {
   try {
     const { classCode, studentId } = req.body;
@@ -64,6 +71,7 @@ router.post('/join', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
+//Add students to the class
 router.post('/:id/students', async (req, res) => {
   try {
     const { studentId } = req.body;
@@ -76,6 +84,7 @@ router.post('/:id/students', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
+//Get class details
 router.get('/:id', async (req, res) => {
   try {
     const classDoc = await db.collection('classes').doc(req.params.id).get();
@@ -87,7 +96,7 @@ router.get('/:id', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
-// ── PUT /:id — update class name, quarter, color, syllabus ─
+//Update class information
 router.put('/:id', async (req, res) => {
   try {
     const { className, quarter, color, syllabus } = req.body;
@@ -101,7 +110,7 @@ router.put('/:id', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
-// ── DELETE /:id/students/:studentId — student leaves class ──────────────
+// remove a student from the class
 router.delete('/:id/students/:studentId', async (req, res) => {
   try {
     const classRef = db.collection('classes').doc(req.params.id);
@@ -113,14 +122,12 @@ router.delete('/:id/students/:studentId', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
-// ── DELETE /:id — delete class + all its assignments ────────────────────
+// Delete Class
 router.delete('/:id', async (req, res) => {
   try {
     const classRef = db.collection('classes').doc(req.params.id);
     const classDoc = await classRef.get();
     if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
-
-    // Batch delete all assignments for this class
     const assignments = await db.collection('assignments').where('class', '==', req.params.id).get();
     const batch = db.batch();
     assignments.docs.forEach(doc => batch.delete(doc.ref));
@@ -131,7 +138,7 @@ router.delete('/:id', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
-// ── POST /:id/announcements — post announcement ──────────────────────────
+// Post an announcement
 router.post('/:id/announcements', async (req, res) => {
   try {
     const { title, body, teacherName } = req.body;
@@ -146,7 +153,7 @@ router.post('/:id/announcements', async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: 'Server error' }); }
 });
 
-// ── DELETE /:id/announcements/:annId — delete announcement ───────────────
+//delete announcement
 router.delete('/:id/announcements/:annId', async (req, res) => {
   try {
     const classRef = db.collection('classes').doc(req.params.id);

@@ -1,3 +1,5 @@
+//Firebase Admin and Firestore initialization
+
 const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccount.json');
 

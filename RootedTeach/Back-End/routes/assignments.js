@@ -1,3 +1,5 @@
+// assignment.js:  API file for managing assignment creation, retrieval, submission, grading, and deletion
+
 const express = require('express');
 const router = express.Router();
 const { db } = require('../firebase');
@@ -14,10 +16,9 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
-// For teacher assignment attachments — any file type allowed
 const upload = multer({ storage });
 
-// For student submissions — code files only
+// For student submissions: code files only
 const uploadCodeOnly = multer({
   storage,
   fileFilter: (req, file, cb) => {
@@ -27,7 +28,7 @@ const uploadCodeOnly = multer({
   },
 });
 
-// ── POST / — Create assignment (optionally with attached file) ───────────
+// Create assignment and save to Firebase
 router.post('/', upload.single('file'), async (req, res) => {
   try {
     const { title, description, dueDate, classId, teacherId, points } = req.body;
@@ -50,7 +51,7 @@ router.post('/', upload.single('file'), async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
-// ── GET /class/:classId — All assignments for a class ─────────────────────
+// Get the list of class assignments with Teacher and Student information
 router.get('/class/:classId', async (req, res) => {
   try {
     const snapshot = await db.collection('assignments').where('class', '==', req.params.classId).get();
@@ -93,12 +94,12 @@ router.get('/class/:classId', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
-// ── GET /class/:classId/stats — Grade stats for teacher ──────────────────
+// Get grade statistics for the specified class
 router.get('/class/:classId/stats', async (req, res) => {
   try {
     const classId = req.params.classId;
 
-    // Get class + enrolled students
+    // enrolled students
     const classDoc = await db.collection('classes').doc(classId).get();
     if (!classDoc.exists) return res.status(404).json({ message: 'Class not found' });
     const studentIds = classDoc.data().students || [];
@@ -152,7 +153,7 @@ router.get('/class/:classId/stats', async (req, res) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
-// ── GET /search — Meaningful search ──────────────────────────────────────
+// Search for assignments by keyword
 router.get('/search', async (req, res) => {
   try {
     const { q = '', classId, studentId } = req.query;
@@ -182,7 +183,7 @@ router.get('/search', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ message: 'Server Error' }); }
 });
 
-// ── POST /:id/submit — Student submits file ───────────────────────────────
+// Submit files for assignments and save AI detection scores to Firestore
 router.post('/:id/submit', (req, res, next) => {
   uploadCodeOnly.single('file')(req, res, (err) => {
     if (err) return res.status(400).json({ message: err.message });
@@ -232,7 +233,7 @@ router.post('/:id/submit', (req, res, next) => {
   } catch (error) { console.error(error); res.status(500).json({ message: 'Server Error' }); }
 });
 
-// ── POST /:id/grade/:studentId — Teacher grades submission ────────────────
+// Student submissions with scores and feedback
 router.post('/:id/grade/:studentId', async (req, res) => {
   try {
     const { score, feedback } = req.body;
@@ -258,7 +259,7 @@ router.post('/:id/grade/:studentId', async (req, res) => {
   }
 });
 
-// ── DELETE /:id — Delete assignment ──────────────────────────────────────
+// Delete the assignment
 router.delete('/:id', async (req, res) => {
   try {
     await db.collection('assignments').doc(req.params.id).delete();

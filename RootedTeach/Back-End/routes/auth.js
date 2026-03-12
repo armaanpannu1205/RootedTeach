@@ -1,3 +1,5 @@
+//auth.js: API file for managing user registration, login, and authentication
+
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -47,7 +49,7 @@ router.post('/login', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ message: 'Server Error.' }); }
 });
 
-// Google OAuth — verifies ID token server-side with firebase-admin, issues our own JWT
+// Login with Google Account
 router.post('/google', async (req, res) => {
   try {
     const { idToken, role } = req.body;
