@@ -439,7 +439,7 @@ class NaiveBayesClassifier {
     }
   }
   
-  // Helper — detects empty catch blocks
+  // Helper detects empty catch blocks
   function catch_empty(code) {
     return /catch\s*\([^)]*\)\s*\{\s*\}/.test(code);
   }
