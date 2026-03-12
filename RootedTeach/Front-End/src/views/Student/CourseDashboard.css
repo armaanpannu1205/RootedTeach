@@ -1,9 +1,3 @@
-/* =============================================
-   EduTrack – CourseDashboard.css
-   Consistent with StudentDashboard aesthetic
-   Font: Fraunces (display) + DM Sans (body)
-   ============================================= */
-
    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap');
 
    :root {
@@ -26,12 +20,14 @@
    
    }
    
+   /* base reset */
    *, *::before, *::after {
      box-sizing: border-box;
      margin: 0;
      padding: 0;
    }
    
+   /* app shell and page layout */
    body {
      font-family: 'DM Sans', sans-serif;
      background: var(--bg);
@@ -57,6 +53,7 @@
      to   { opacity: 1; transform: translateY(0); }
    }
    
+   /* page header */
    .page-header {
      margin-bottom: 28px;
    }
@@ -77,6 +74,7 @@
      font-weight: 300;
    }
    
+   /* reusable content cards */
    .section-card {
      background: var(--bg-card);
      border-radius: var(--radius);
@@ -102,6 +100,7 @@
      border-bottom: 1px solid rgba(26, 26, 46, 0.07);
    }
    
+   /* info grid / metadata blocks */
    .info-grid {
      display: grid;
      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -128,6 +127,7 @@
      color: var(--text-primary);
    }
    
+   /* weekly schedule list */
    .week-list {
      list-style: none;
      display: flex;
@@ -170,6 +170,7 @@
      font-weight: 400;
    }
    
+   /* grade summary and progress */
    .grade-summary {
      display: flex;
      align-items: center;
@@ -221,6 +222,7 @@
      margin-top: 6px;
    }
    
+   /* grade table styles */
    .grade-table {
      width: 100%;
      border-collapse: collapse;
@@ -273,6 +275,7 @@
     color: var(--accent, #e07a5f);
   }
    
+  /* shared status pills */
    .grade-pill {
      display: inline-block;
      font-size: 11px;
@@ -292,6 +295,7 @@
      color: #b07a28;
    }
    
+   /* announcement list */
    .announce-item {
      padding: 18px 0;
      border-bottom: 1px solid rgba(26, 26, 46, 0.06);
@@ -331,6 +335,7 @@
      line-height: 1.6;
    }
    
+   /* responsice layout adjustments */
    @media (max-width: 768px) {
      .main {
        padding: 24px 18px;
@@ -360,6 +365,7 @@
      }
    }
 
+   /* assignment tile list */
    .assignment-tiles {
     display: flex;
     flex-direction: column;
@@ -447,7 +453,7 @@
     font-weight: 600;
   }
   
-
+  /* detailed grade breakdown */
   .grade-section {
     padding: 0 4px;
     margin-bottom: 16px;
@@ -543,7 +549,7 @@
   }
 
 
-/* ── Search ── */
+/* search controls */
 .search-input {
   width: 100%; padding: 11px 14px 11px 40px; border: 1.5px solid #e8eaf0;
   border-radius: 10px; font-size: 14px; font-family: inherit; outline: none;
@@ -556,13 +562,13 @@
 }
 .search-btn:disabled { opacity: .5; cursor: not-allowed; }
 
-/* ── Grade circle ── */
+/* grade circle display */
 .grade-circle {
   width: 72px; height: 72px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 
-/* ── Week list ── */
+/* alternate week list styles */
 .week-list { list-style: none; padding: 0; margin: 0; }
 .week-item {
   display: flex; align-items: baseline; gap: 14px;
@@ -572,7 +578,7 @@
 .week-num { min-width: 64px; font-size: 11px; font-weight: 700; color: #7269e0; text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
 .week-topic { font-size: 14px; color: #1a1f36; line-height: 1.5; }
 
-/* ── Empty / loading ── */
+/* empty, loading, and error */
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
   gap: 8px; padding: 40px 24px; color: var(--muted); text-align: center;
@@ -583,13 +589,13 @@
   border-radius: 10px; padding: 12px 16px; color: #e53e3e; margin-top: 12px;
 }
 
-/* ── Info grid ── */
+/* Info grid */
 .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
 .info-item { display: flex; flex-direction: column; gap: 4px; }
 .info-item label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
 .info-item span { font-size: 14px; color: #1a1f36; font-weight: 500; }
 
-/* ── Grade table ── */
+/* Grade table */
 .grade-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .grade-table th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1.5px solid #f0f0f6; }
 .grade-table td { padding: 12px 12px; border-bottom: 1px solid #f8f8fc; vertical-align: middle; }

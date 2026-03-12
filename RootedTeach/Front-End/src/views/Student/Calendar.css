@@ -1,20 +1,16 @@
-/* =============================================
-   RootedTeach – Calendar.css
-   ============================================= */
-
    .cal-main {
     padding: 40px 48px;
     max-width: 1100px;
   }
-  
-  /* ── Two-column layout ── */
+
+  /* Two-column layout */
   .cal-layout {
     display: flex;
     gap: 28px;
     align-items: flex-start;
   }
   
-  /* ── Calendar grid section ── */
+  /* Calendar grid section */
   .cal-grid-section {
     flex: 1;
     background: var(--bg-card, #fffef9);
@@ -157,7 +153,7 @@
     align-self: center;
   }
   
-  /* ── Upcoming sidebar ── */
+  /* Upcoming sidebar */
   .cal-sidebar {
     width: 280px;
     flex-shrink: 0;
@@ -258,7 +254,7 @@
     color: #b52a2a;
   }
   
-  /* ── Responsive ── */
+  /* Responsive */
   @media (max-width: 860px) {
     .cal-layout {
       flex-direction: column;

@@ -34,12 +34,24 @@ function Account() {
     };
   };
 
-  const [user, setUser] = useState(buildUserFromStorage);
+
+  // load saved coursed from localStorage
+  const [courses] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('courses')) || []; }
+    catch { return []; }
+  });
+
+  //load saved profile or fall back to defaults
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('userProfile')) || DEFAULT_USER; }
+    catch { return DEFAULT_USER; }
+  });
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft]     = useState(user);
   const [toast, setToast]     = useState('');
 
+  // save editable fields while keeping student ID locked
   function saveProfile() {
     const saved = { ...draft, studentId: user.studentId };
     setUser(saved);
@@ -49,6 +61,7 @@ function Account() {
     setTimeout(() => setToast(''), 3000);
   }
 
+  // clear local data and return to home
   function handleLogout() {
     localStorage.clear();
     navigate('/');
@@ -74,6 +87,7 @@ function Account() {
     <div className="account-card">
         <div className="account-avatar">🎓</div>
 
+        {/* view mode */}
         {!editing ? (
         <>
             <div className="account-name">{user.name}</div>
@@ -104,6 +118,7 @@ function Account() {
         </>
         ) : (
         <>
+            {/* edit mode */}
             <div className="account-edit-form">
                 <div className="account-edit-field">
                   <label>Student ID <span className="account-locked-badge">🔒</span></label>
@@ -130,6 +145,7 @@ function Account() {
     </div>
     </div>
 
+    {/* temporary success message */}
     {toast && <div className="toast">{toast}</div>}
     </div>
     );

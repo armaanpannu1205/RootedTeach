@@ -31,6 +31,7 @@ const COURSE_BY_ID = {
     'cs180':   { id: 'cs180',   code: 'CS 180',   name: 'Introduction to Algorithms and Complexity', prof: 'Park',    color: 2 },
   };
 
+// return a simple deadline label based on the due date
 function getDaysLeft(due) {
   const d = new Date(due) - new Date();
   const days = Math.ceil(d / 86400000);
@@ -41,6 +42,7 @@ function getDaysLeft(due) {
 
 function AllAssignment() {
   const navigate = useNavigate();
+  // load saved courses or use sample data
   const [courses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('courses')) || SAMPLE_COURSES; }
     catch { return SAMPLE_COURSES; }
@@ -49,7 +51,7 @@ function AllAssignment() {
   const [filter, setFilter] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState('all');
 
-
+  // apply status and course filters
   const filtered = ALL_ASSIGNMENTS.filter(a => {
     const statusOk = filter === 'all' || a.status === filter;
     const courseOk = selectedCourse === 'all' || a.courseId === selectedCourse;
@@ -59,6 +61,7 @@ function AllAssignment() {
   const pendingCount   = ALL_ASSIGNMENTS.filter(a => a.status === 'pending').length;
   const submittedCount = ALL_ASSIGNMENTS.filter(a => a.status === 'submitted').length;
 
+  // store selected assignment info before navigating
   function openAssignment(a) {
     const course = COURSE_BY_ID[a.courseId];
     if (course) {
@@ -82,6 +85,7 @@ function AllAssignment() {
           </div>
         </div>
 
+        {/* assignment summary cards */}
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-val">{ALL_ASSIGNMENTS.length}</div>
@@ -97,6 +101,7 @@ function AllAssignment() {
           </div>
         </div>
 
+        {/* filter buttons */}
         <div className="aa-filters">
           <div className="aa-filter-group">
             {['all', 'pending', 'submitted'].map(f => (

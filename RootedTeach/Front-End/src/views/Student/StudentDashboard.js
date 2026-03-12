@@ -4,6 +4,8 @@ import Sidebar, { COURSE_COLORS } from '../../components/Sidebar/Sidebar';
 import './StudentDashboard.css';
 
 const BASE = 'http://localhost:5001';
+
+//attach auth token when available
 function authFetch(path, opts = {}) {
   const token = localStorage.getItem('token');
   return fetch(`${BASE}${path}`, {
@@ -54,6 +56,7 @@ function StudentDashboard() {
     fetchCourses();
   }, [studentId]);
 
+  // keep courses cached locally
   useEffect(() => { localStorage.setItem('courses', JSON.stringify(courses)); }, [courses]);
 
   async function joinCourse() {
@@ -84,6 +87,7 @@ function StudentDashboard() {
     finally { setJoining(false); }
   }
 
+  // remove a class from the current student's dashboard
   async function deleteCourse(classId) {
     const studentId = localStorage.getItem('userId');
     try {
@@ -99,6 +103,7 @@ function StudentDashboard() {
     setTimeout(() => setToast(''), 3000);
   }
 
+  // store selected course before navigating
   function openCourse(course) {
     localStorage.setItem('currentCourse', JSON.stringify(course));
     navigate('/course');
@@ -121,6 +126,7 @@ function StudentDashboard() {
           </button>
         </div>
 
+        {/* quick stats */}
         <div className="stats-row">
           <div className="stat-card">
             <div className="stat-val">{loading ? '…' : courses.length}</div>
@@ -168,6 +174,7 @@ function StudentDashboard() {
         </div>
       </div>
 
+      {/* join class modal */}
       {showModal && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal">
@@ -187,6 +194,7 @@ function StudentDashboard() {
         </div>
       )}
 
+      {/* delete class confirmaton */}
       {deleteTarget && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setDeleteTarget(null)}>
           <div className="modal modal--danger">
@@ -201,6 +209,7 @@ function StudentDashboard() {
         </div>
       )}
 
+      {/* tmeporary toast message */}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );

@@ -10,7 +10,6 @@ const SAMPLE_COURSES = [
   { id: 'cs180',   code: 'CS 180',   name: 'Introduction to Algorithms and Complexity', prof: 'Park',    color: 2, assignments: 2, upcoming: 0 },
 ];
 
-// ✅ CHANGE 2: grade data for each course
 const COURSE_GRADE_DATA = {
   'cs35l': {
     letterGrade: 'A',
@@ -50,7 +49,7 @@ const COURSE_GRADE_DATA = {
   },
 };
 
-// ── SVG Donut Chart ──────────────────────────────────────────────────────────
+// simple donut chart for grade display
 function DonutChart({ percent, color, size = 100, stroke = 12 }) {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
@@ -58,14 +57,14 @@ function DonutChart({ percent, color, size = 100, stroke = 12 }) {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-      {/* track */}
+      {/* background ring */}
       <circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none"
         stroke="rgba(26,26,46,0.08)"
         strokeWidth={stroke}
       />
-      {/* fill */}
+      {/* progress ring */}
       <circle
         cx={size / 2} cy={size / 2} r={r}
         fill="none"
@@ -79,7 +78,7 @@ function DonutChart({ percent, color, size = 100, stroke = 12 }) {
   );
 }
 
-// ── Grade letter → colour ────────────────────────────────────────────────────
+// pick a color based on the letter grade
 function gradeColor(letter) {
   if (letter.startsWith('A')) return '#2ecc8b';
   if (letter.startsWith('B')) return '#4facfe';
@@ -89,6 +88,7 @@ function gradeColor(letter) {
 
 function AllGrades() {
   const navigate = useNavigate();
+  // use saved courses if available
   const [courses] = useState(() => {
     try {
       const saved = localStorage.getItem('courses');
@@ -96,13 +96,14 @@ function AllGrades() {
     } catch { return SAMPLE_COURSES; }
   });
 
+  // track which course card is expanded
   const [expanded, setExpanded] = useState(null); // courseId of open detail panel
 
-  // Weighted overall GPA across all courses (simple average here)
   const allGpa = courses
     .map(c => COURSE_GRADE_DATA[c.id]?.gpa ?? 0)
     .reduce((a, b) => a + b, 0) / courses.length;
 
+  // save selected course before opening it
   function openCourse(c) {
     localStorage.setItem('currentCourse', JSON.stringify(c));
     navigate('/course');
@@ -122,7 +123,7 @@ function AllGrades() {
           </div>
         </div>
 
-        {/* ── Top summary strip ── */}
+        {/* top summary */}
         <div className="stats-row" style={{ marginBottom: 36 }}>
           <div className="stat-card">
             <div className="stat-val">{courses.length}</div>
@@ -140,7 +141,6 @@ function AllGrades() {
           </div>
         </div>
 
-        {/* ── Course grade cards grid ── */}
         <div className="section-title">Course Overview</div>
         <div className="grades-grid">
           {courses.map((c) => {
@@ -153,7 +153,7 @@ function AllGrades() {
 
             return (
               <div className="grade-course-card" key={c.id}>
-                {/* ── Card header strip ── */}
+                {/* course header */}
                 <div
                   className="gcc-header"
                   style={{ background: COURSE_COLORS[c.color % COURSE_COLORS.length].gradient }}
@@ -164,7 +164,7 @@ function AllGrades() {
                   </div>
                 </div>
 
-                {/* ── Donut + grade ── */}
+                {/* grade summary */}
                 <div className="gcc-body">
                   <div className="gcc-donut-wrap">
                     <DonutChart percent={data.gpa} color={lColor} size={96} stroke={10} />
@@ -206,6 +206,7 @@ function AllGrades() {
                   </div>
                 </div>
 
+                {/* expanded grade table */}
                 {isOpen && (
                   <div className="gcc-detail">
                     <table className="gcc-table">
